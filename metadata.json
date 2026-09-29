@@ -1,0 +1,6 @@
+{
+  "name": "Kanso Projects - Personal Ticket Workspace",
+  "description": "A lightweight personal workspace for managing projects and tickets with a Kanban board, search, attachments, and downloadable reports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
