@@ -56,6 +56,7 @@ export const AllTicketsPage: React.FC = () => {
   const [activeTicketForDetails, setActiveTicketForDetails] = useState<Ticket | null>(null);
   const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
   const [isTicketFormOpen, setIsTicketFormOpen] = useState(false);
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -191,26 +192,77 @@ export const AllTicketsPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExportSelectedCsv}
-            leftIcon={<Download className="w-3.5 h-3.5" />}
-            className="text-xs"
-          >
-            Export CSV
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => {
-              setEditingTicket(null);
-              setIsTicketFormOpen(true);
-            }}
-            className="text-xs"
-          >
-            New Ticket
-          </Button>
+          {/* Export Dropdown */}
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsExportMenuOpen(!isExportMenuOpen);
+              }}
+              leftIcon={<Download className="w-3.5 h-3.5" />}
+              rightIcon={<ChevronDown className="w-3 h-3 text-slate-400" />}
+              className="text-xs"
+            >
+              Export
+            </Button>
+
+            {isExportMenuOpen && (
+              <div
+                className="absolute right-0 top-full mt-1.5 w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-30 py-1 text-xs divide-y divide-slate-100"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                  Export {selectedTicketIds.size > 0 ? `${selectedTicketIds.size} Selected` : `${filteredTickets.length} Filtered`}
+                </div>
+                <div className="py-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsExportMenuOpen(false);
+                      const target = selectedTicketIds.size > 0
+                        ? tickets.filter((t) => selectedTicketIds.has(t.id))
+                        : filteredTickets;
+                      exportUtils.exportBulkTicketsPdf(target, 'Tickets Workspace');
+                    }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-slate-50 text-slate-700 flex items-center gap-2 cursor-pointer"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-rose-500" />
+                    <span>Export as PDF</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsExportMenuOpen(false);
+                      const target = selectedTicketIds.size > 0
+                        ? tickets.filter((t) => selectedTicketIds.has(t.id))
+                        : filteredTickets;
+                      exportUtils.exportBulkTicketsExcel(target, 'Tickets Workspace');
+                    }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-slate-50 text-slate-700 flex items-center gap-2 cursor-pointer"
+                  >
+                    <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Export as Excel (.xlsx)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsExportMenuOpen(false);
+                      const target = selectedTicketIds.size > 0
+                        ? tickets.filter((t) => selectedTicketIds.has(t.id))
+                        : filteredTickets;
+                      exportUtils.exportToCsv(target, 'tickets_export');
+                    }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-slate-50 text-slate-700 flex items-center gap-2 cursor-pointer"
+                  >
+                    <FileCode className="w-3.5 h-3.5 text-sky-600" />
+                    <span>Export as CSV</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

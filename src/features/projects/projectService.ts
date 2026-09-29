@@ -42,7 +42,7 @@ export const projectService = {
     const user = localDB.getCurrentUser();
     const newProject: Project = {
       id: `proj-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      user_id: user.id,
+      user_id: user?.id || 'usr-default-001',
       name: formData.name.trim(),
       description: formData.description?.trim() || '',
       status: formData.status || 'active',
@@ -59,7 +59,7 @@ export const projectService = {
           name: newProject.name,
           description: newProject.description,
           status: newProject.status,
-          user_id: user.id,
+          user_id: user?.id || newProject.user_id,
         })
         .select()
         .single();
@@ -152,11 +152,12 @@ export const projectService = {
 
     const statusColorsMap: Record<string, string> = {
       'Just Written': '#64748b',
+      'Under Review': '#d97706',
+      'Verified': '#0284c7',
+      'Uploaded': '#7c3aed',
       'In Progress': '#0284c7',
-      'Under Review': '#eab308',
       'Changes Required': '#ea580c',
       'Completed': '#16a34a',
-      'Uploaded': '#8b5cf6',
     };
 
     const statusDistribution = statuses.map((st) => ({

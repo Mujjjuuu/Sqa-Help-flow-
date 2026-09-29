@@ -13,7 +13,12 @@ import {
   Copy,
   ExternalLink,
   Code2,
+  Flame,
+  Cloud,
 } from 'lucide-react';
+import { useFirebase } from '../context/FirebaseContext';
+import { validateFirestoreConnection } from '../services/firebase';
+import firebaseConfig from '../../firebase-applet-config.json';
 import { Card } from '../components/Card';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
@@ -24,7 +29,7 @@ import {
   isSupabaseConfigured,
   getSupabaseClient,
 } from '../services/supabaseClient';
-import { localDB } from '../services/localStore';
+import { localDB, DEFAULT_USER } from '../services/localStore';
 
 const MIGRATION_SQL = `-- ====================================================================
 -- Kanso Projects - Personal Ticket Workspace
@@ -191,7 +196,36 @@ export const SettingsPage: React.FC = () => {
   const [showSqlPreview, setShowSqlPreview] = useState(false);
 
   const isConnected = isSupabaseConfigured();
-  const currentUser = localDB.getCurrentUser();
+  const currentUser = localDB.getCurrentUser() || DEFAULT_USER;
+  const { user: fbUser, signIn: fbSignIn, signOut: fbSignOut } = useFirebase();
+  const [isFbTesting, setIsFbTesting] = useState(false);
+  const [fbTestResult, setFbTestResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  const handleTestFirebase = async () => {
+    setIsFbTesting(true);
+    setFbTestResult(null);
+    try {
+      const isOnline = await validateFirestoreConnection();
+      if (isOnline) {
+        setFbTestResult({
+          success: true,
+          message: `Connected to Cloud Firestore (Database: ${firebaseConfig.firestoreDatabaseId})`,
+        });
+      } else {
+        setFbTestResult({
+          success: false,
+          message: 'Client reported offline. Please check network connectivity.',
+        });
+      }
+    } catch (e: any) {
+      setFbTestResult({
+        success: false,
+        message: e.message || 'Error validating Firebase connection.',
+      });
+    } finally {
+      setIsFbTesting(false);
+    }
+  };
 
   const projectRef = supabaseUrl.includes('.supabase.co')
     ? supabaseUrl.replace('https://', '').replace('.supabase.co', '').split('/')[0]
@@ -530,6 +564,114 @@ export const SettingsPage: React.FC = () => {
             </pre>
           </div>
         )}
+      </Card>
+
+      {/* Firebase Cloud Firestore & Authentication Card */}
+      <Card className="p-6 bg-white space-y-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/60">
+              <Flame className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-bold text-slate-900">Google Firebase & Cloud Firestore</h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  Provisioned
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Cloud Firestore database & Google OAuth authentication engine.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-3 border-t border-slate-100 text-xs">
+          <div className="bg-slate-50 p-3 rounded-lg border border-slate-200/70">
+            <span className="text-slate-400 block text-[11px] mb-1">Firebase Project ID</span>
+            <span className="font-mono font-semibold text-slate-800 text-xs break-all">
+              {firebaseConfig.projectId}
+            </span>
+          </div>
+
+          <div className="bg-slate-50 p-3 rounded-lg border border-slate-200/70">
+            <span className="text-slate-400 block text-[11px] mb-1">Firestore Database ID</span>
+            <span className="font-mono font-semibold text-slate-800 text-xs break-all">
+              {firebaseConfig.firestoreDatabaseId}
+            </span>
+          </div>
+
+          <div className="bg-slate-50 p-3 rounded-lg border border-slate-200/70">
+            <span className="text-slate-400 block text-[11px] mb-1">Google Auth State</span>
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${fbUser ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+              <span className="font-medium text-slate-700">
+                {fbUser ? `Signed in as ${fbUser.displayName || fbUser.email}` : 'Not signed in'}
+              </span>
+            </div>
+          </div>
+
+          <div className="bg-slate-50 p-3 rounded-lg border border-slate-200/70">
+            <span className="text-slate-400 block text-[11px] mb-1">Security Rules</span>
+            <span className="font-medium text-emerald-700 flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              Hardened ABAC Rules Active
+            </span>
+          </div>
+        </div>
+
+        {fbTestResult && (
+          <div
+            className={`p-3 rounded-lg text-xs flex items-center gap-2 border ${
+              fbTestResult.success
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                : 'bg-rose-50 text-rose-800 border-rose-200'
+            }`}
+          >
+            {fbTestResult.success ? (
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+            ) : (
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+            )}
+            <span>{fbTestResult.message}</span>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleTestFirebase}
+            isLoading={isFbTesting}
+            leftIcon={<Flame className="w-3.5 h-3.5 text-amber-500" />}
+          >
+            Verify Firestore Connection
+          </Button>
+
+          {fbUser ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => fbSignOut()}
+              className="text-xs"
+            >
+              Sign Out of Google
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={() => fbSignIn()}
+              className="text-xs"
+            >
+              Sign In with Google
+            </Button>
+          )}
+        </div>
       </Card>
 
       {/* User Profile Card */}

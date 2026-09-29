@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Paperclip, Calendar, GripVertical } from 'lucide-react';
+import { Paperclip, Calendar, GripVertical, StickyNote } from 'lucide-react';
 import { Ticket } from '../../types';
 import { CATEGORY_COLORS, PRIORITY_CONFIG } from '../../config/ticketCategories';
 
@@ -103,9 +103,19 @@ export const TicketCard: React.FC<TicketCardProps> = ({
         </div>
       )}
 
-      {/* Footer Info: Attachments & Due/Update Date */}
+      {/* Footer Info: Notes, Attachments & Due/Update Date */}
       <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          {ticket.notes && (
+            <span
+              className="flex items-center gap-0.5 text-amber-700 bg-amber-50 border border-amber-200/60 px-1.5 py-0.5 rounded font-medium text-[10px]"
+              title="Has personal notes"
+            >
+              <StickyNote className="w-2.5 h-2.5 text-amber-600" />
+              <span>Note</span>
+            </span>
+          )}
+
           {attachmentCount > 0 && (
             <span className="flex items-center gap-1 text-slate-500 font-medium" title={`${attachmentCount} attachments`}>
               <Paperclip className="w-3 h-3" />

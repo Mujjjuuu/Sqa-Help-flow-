@@ -23,7 +23,7 @@ interface DatabaseSchema {
   currentUser: User | null;
 }
 
-const DEFAULT_USER: User = {
+export const DEFAULT_USER: User = {
   id: 'usr-default-001',
   email: 'boboffical54@gmail.com',
   name: 'Bob Official',
@@ -131,7 +131,7 @@ function seedInitialData(): void {
       description: 'Implement biometric prompt with secure enclave key storage and 5-attempt PIN lock protection.',
       notes: 'Reviewed security whitepaper; ensure biometric payload is salted before transmission.',
       category_id: getCatId(proj1Id, 'MobileApp frontend'),
-      status_id: getStatusId(proj1Id, 'In Progress'),
+      status_id: getStatusId(proj1Id, 'Under Review'),
       priority: 'high',
       due_date: new Date(Date.now() + 4 * 86400000).toISOString(),
       created_at: new Date(Date.now() - 6 * 86400000).toISOString(),
@@ -173,7 +173,7 @@ function seedInitialData(): void {
       description: 'Search input was not unmounting observer properly when switching between checking and savings tabs.',
       notes: 'Resolved by wrapping cleanup effect in AbortController signal.',
       category_id: getCatId(proj1Id, 'Testing'),
-      status_id: getStatusId(proj1Id, 'Changes Required'),
+      status_id: getStatusId(proj1Id, 'Verified'),
       priority: 'urgent',
       due_date: new Date(Date.now() + 1 * 86400000).toISOString(),
       created_at: new Date(Date.now() - 3 * 86400000).toISOString(),
@@ -187,7 +187,7 @@ function seedInitialData(): void {
       description: 'Client-side receipt and statement formatting with checksum calculation.',
       notes: 'Approved during security walkthrough.',
       category_id: getCatId(proj1Id, 'Backend'),
-      status_id: getStatusId(proj1Id, 'Completed'),
+      status_id: getStatusId(proj1Id, 'Verified'),
       priority: 'medium',
       due_date: new Date(Date.now() - 2 * 86400000).toISOString(),
       created_at: new Date(Date.now() - 10 * 86400000).toISOString(),
@@ -217,7 +217,7 @@ function seedInitialData(): void {
       description: 'Prevent double charging during network retry spikes with a 24h key TTL.',
       notes: 'Benchmark showed < 2ms latency overhead.',
       category_id: getCatId(proj2Id, 'Backend'),
-      status_id: getStatusId(proj2Id, 'In Progress'),
+      status_id: getStatusId(proj2Id, 'Under Review'),
       priority: 'urgent',
       due_date: new Date(Date.now() + 3 * 86400000).toISOString(),
       created_at: new Date(Date.now() - 5 * 86400000).toISOString(),
@@ -306,12 +306,9 @@ function seedInitialData(): void {
 seedInitialData();
 
 export const localDB = {
-  // Current user
-  getCurrentUser(): User {
-    const user = getStoredTable<User | null>('currentUser', null);
-    if (user) return user;
-    saveTable('currentUser', DEFAULT_USER);
-    return DEFAULT_USER;
+  // Current user (null when logged out)
+  getCurrentUser(): User | null {
+    return getStoredTable<User | null>('currentUser', null);
   },
 
   setCurrentUser(user: User | null): void {
@@ -322,7 +319,10 @@ export const localDB = {
   getProjects(): Project[] {
     const user = this.getCurrentUser();
     const projects = getStoredTable<Project[]>('projects', []);
-    return projects.filter((p) => p.user_id === user.id);
+    if (!user) return [];
+    return projects.filter(
+      (p) => !p.user_id || p.user_id === user.id || p.user_id === DEFAULT_USER.id
+    );
   },
 
   getProjectById(id: string): Project | null {
@@ -374,19 +374,69 @@ export const localDB = {
     const all = getStoredTable<Status[]>('statuses', []);
     let filtered = all.filter((s) => s.project_id === projectId);
     
-    // Auto-create default statuses if none exist for this project
-    if (filtered.length === 0) {
-      const newStatuses: Status[] = DEFAULT_TICKET_STATUSES.map((st) => ({
-        id: `st-${projectId}-${st.position}`,
-        project_id: projectId,
-        name: st.name,
-        position: st.position,
-        is_final: st.is_final,
-        created_at: new Date().toISOString(),
-      }));
-      all.push(...newStatuses);
-      saveTable('statuses', all);
+    // Check if current project statuses match the 4-column workflow
+    const hasOldStatuses = filtered.some((s) =>
+      ['In Progress', 'Changes Required', 'Completed'].includes(s.name)
+    );
+
+    // Auto-create or migrate default 4 statuses for this project
+    if (filtered.length === 0 || hasOldStatuses || filtered.length !== 4) {
+      const oldStatuses = [...filtered];
+      const newStatuses: Status[] = DEFAULT_TICKET_STATUSES.map((st) => {
+        // Reuse existing matching status ID if name matches
+        const existing = oldStatuses.find((o) => o.name === st.name);
+        return {
+          id: existing ? existing.id : `st-${projectId}-${st.position}`,
+          project_id: projectId,
+          name: st.name,
+          position: st.position,
+          is_final: st.is_final,
+          created_at: existing ? existing.created_at : new Date().toISOString(),
+        };
+      });
+
+      // Remove old project statuses and insert the 4 standardized statuses
+      const others = all.filter((s) => s.project_id !== projectId);
+      others.push(...newStatuses);
+      saveTable('statuses', others);
       filtered = newStatuses;
+
+      // Migrate existing tickets mapped to obsolete statuses
+      if (oldStatuses.length > 0) {
+        const tickets = getStoredTable<Ticket[]>('tickets', []);
+        let ticketsChanged = false;
+
+        const justWrittenId = newStatuses.find((s) => s.name === 'Just Written')?.id || '';
+        const underReviewId = newStatuses.find((s) => s.name === 'Under Review')?.id || '';
+        const verifiedId = newStatuses.find((s) => s.name === 'Verified')?.id || '';
+        const uploadedId = newStatuses.find((s) => s.name === 'Uploaded')?.id || '';
+
+        tickets.forEach((t) => {
+          if (t.project_id === projectId) {
+            const oldMatch = oldStatuses.find((s) => s.id === t.status_id);
+            if (oldMatch) {
+              if (oldMatch.name === 'Just Written') {
+                t.status_id = justWrittenId;
+              } else if (['In Progress', 'Under Review', 'Changes Required'].includes(oldMatch.name)) {
+                t.status_id = underReviewId;
+                ticketsChanged = true;
+              } else if (['Completed', 'Verified'].includes(oldMatch.name)) {
+                t.status_id = verifiedId;
+                ticketsChanged = true;
+              } else if (oldMatch.name === 'Uploaded' || oldMatch.is_final) {
+                t.status_id = uploadedId;
+              }
+            } else if (!newStatuses.some((s) => s.id === t.status_id)) {
+              t.status_id = justWrittenId;
+              ticketsChanged = true;
+            }
+          }
+        });
+
+        if (ticketsChanged) {
+          saveTable('tickets', tickets);
+        }
+      }
     }
     return filtered.sort((a, b) => a.position - b.position);
   },

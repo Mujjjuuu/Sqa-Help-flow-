@@ -10,7 +10,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
+  LogOut,
+  LogIn,
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export interface SidebarProps {
   isCollapsed: boolean;
@@ -25,6 +29,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenNewProject,
   onCloseMobileDrawer,
 }) => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await logout();
+    navigate('/login', { replace: true });
+  };
+
   const navItems = [
     { to: '/', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/projects', label: 'Projects', icon: FolderKanban },
@@ -107,23 +119,60 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </nav>
       </div>
 
-      {/* Footer Info */}
+      {/* Footer Info / User Auth */}
       <div className="p-3 border-t border-slate-100">
-        <div
-          className={`flex items-center gap-2.5 px-2 py-2 rounded-lg bg-slate-50 text-slate-600 text-xs ${
-            isCollapsed ? 'justify-center px-0' : ''
-          }`}
-        >
-          <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-semibold text-[11px] shrink-0">
-            B
-          </div>
-          {!isCollapsed && (
-            <div className="truncate leading-tight">
-              <span className="font-medium text-slate-800 block text-xs truncate">Bob Official</span>
-              <span className="text-[10px] text-slate-400 block truncate">Solo Workspace</span>
+        {user ? (
+          <div
+            className={`flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200/60 text-slate-600 text-xs ${
+              isCollapsed ? 'justify-center p-1.5' : ''
+            }`}
+          >
+            <div className="flex items-center gap-2 truncate">
+              {user.avatar_url ? (
+                <img
+                  src={user.avatar_url}
+                  alt={user.name || 'User'}
+                  className="w-7 h-7 rounded-full shrink-0 border border-slate-200 object-cover"
+                />
+              ) : (
+                <div className="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                  {(user.name || user.email || 'U')[0].toUpperCase()}
+                </div>
+              )}
+              {!isCollapsed && (
+                <div className="truncate leading-tight">
+                  <span className="font-semibold text-slate-800 block text-xs truncate">
+                    {user.name}
+                  </span>
+                  <span className="text-[10px] text-slate-400 block truncate">{user.email}</span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+
+            {!isCollapsed && (
+              <button
+                type="button"
+                onClick={handleSignOut}
+                title="Sign out of workspace"
+                className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-200/60 transition-colors cursor-pointer"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => navigate('/login')}
+            className={`w-full flex items-center gap-2 py-2 px-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium transition-colors shadow-2xs cursor-pointer ${
+              isCollapsed ? 'justify-center px-0' : ''
+            }`}
+            title="Sign in"
+          >
+            <LogIn className="w-3.5 h-3.5 shrink-0" />
+            {!isCollapsed && <span className="truncate">Sign In</span>}
+          </button>
+        )}
       </div>
     </aside>
   );

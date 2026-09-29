@@ -1,0 +1,294 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Personal workspace user profile",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "User UID from Firebase Auth"
+        },
+        "email": {
+          "type": "string",
+          "description": "User email address"
+        },
+        "name": {
+          "type": "string",
+          "description": "User display name",
+          "maxLength": 100
+        },
+        "avatar_url": {
+          "type": "string",
+          "description": "Avatar photo URL"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Account creation timestamp"
+        }
+      },
+      "required": ["id", "email", "name", "created_at"]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Workspace project tracking tickets and boards",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique project identifier"
+        },
+        "user_id": {
+          "type": "string",
+          "description": "UID of the project creator"
+        },
+        "name": {
+          "type": "string",
+          "description": "Project display name",
+          "maxLength": 120
+        },
+        "description": {
+          "type": "string",
+          "description": "Project summary or goals",
+          "maxLength": 1000
+        },
+        "status": {
+          "type": "string",
+          "description": "Lifecycle status",
+          "enum": ["active", "archived"]
+        },
+        "created_at": {
+          "type": "string",
+          "description": "ISO timestamp of creation"
+        },
+        "updated_at": {
+          "type": "string",
+          "description": "ISO timestamp of last update"
+        },
+        "archived_at": {
+          "type": "string",
+          "description": "ISO timestamp when archived"
+        }
+      },
+      "required": ["name", "status", "created_at", "updated_at"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Project-specific ticket category or tag",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Category ID"
+        },
+        "project_id": {
+          "type": "string",
+          "description": "Parent project ID"
+        },
+        "name": {
+          "type": "string",
+          "description": "Category title (e.g. UI/UX, Backend)",
+          "maxLength": 60
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["project_id", "name", "created_at"]
+    },
+    "Status": {
+      "title": "Status",
+      "description": "Kanban board workflow status column",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Status ID"
+        },
+        "project_id": {
+          "type": "string",
+          "description": "Parent project ID"
+        },
+        "name": {
+          "type": "string",
+          "description": "Status column name",
+          "maxLength": 60
+        },
+        "position": {
+          "type": "number",
+          "description": "Display order index"
+        },
+        "is_final": {
+          "type": "boolean",
+          "description": "Whether moving here marks ticket as completed/uploaded"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["project_id", "name", "position", "is_final", "created_at"]
+    },
+    "Ticket": {
+      "title": "Ticket",
+      "description": "Issue or task ticket within a project",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Ticket ID"
+        },
+        "project_id": {
+          "type": "string",
+          "description": "Parent project ID"
+        },
+        "ticket_number": {
+          "type": "string",
+          "description": "Human readable code like MB-101",
+          "maxLength": 30
+        },
+        "title": {
+          "type": "string",
+          "description": "Ticket summary",
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed requirements",
+          "maxLength": 5000
+        },
+        "notes": {
+          "type": "string",
+          "description": "Scratchpad / execution notes",
+          "maxLength": 5000
+        },
+        "category_id": {
+          "type": "string",
+          "description": "Assigned category ID"
+        },
+        "status_id": {
+          "type": "string",
+          "description": "Assigned workflow status column ID"
+        },
+        "priority": {
+          "type": "string",
+          "description": "Ticket priority level",
+          "enum": ["low", "medium", "high", "urgent"]
+        },
+        "due_date": {
+          "type": "string",
+          "description": "Optional deadline date"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Created timestamp"
+        },
+        "updated_at": {
+          "type": "string",
+          "description": "Updated timestamp"
+        }
+      },
+      "required": ["project_id", "ticket_number", "title", "category_id", "status_id", "priority", "created_at", "updated_at"]
+    },
+    "Attachment": {
+      "title": "Attachment",
+      "description": "File attachment metadata on a ticket",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Attachment ID"
+        },
+        "ticket_id": {
+          "type": "string",
+          "description": "Parent ticket ID"
+        },
+        "file_name": {
+          "type": "string",
+          "description": "Original file name",
+          "maxLength": 255
+        },
+        "file_url": {
+          "type": "string",
+          "description": "Storage download URL"
+        },
+        "file_type": {
+          "type": "string",
+          "description": "MIME type"
+        },
+        "file_size": {
+          "type": "number",
+          "description": "File size in bytes"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Upload timestamp"
+        }
+      },
+      "required": ["ticket_id", "file_name", "file_url", "file_type", "file_size", "created_at"]
+    },
+    "TicketHistory": {
+      "title": "TicketHistory",
+      "description": "Audit trail log of ticket state changes",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "History record ID"
+        },
+        "ticket_id": {
+          "type": "string",
+          "description": "Parent ticket ID"
+        },
+        "action_type": {
+          "type": "string",
+          "description": "Action performed (e.g. status_change, edit)"
+        },
+        "old_value": {
+          "type": "string",
+          "description": "Previous value snapshot"
+        },
+        "new_value": {
+          "type": "string",
+          "description": "New value snapshot"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Event timestamp"
+        }
+      },
+      "required": ["ticket_id", "action_type", "created_at"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile collection"
+    },
+    "/projects/{projectId}": {
+      "schema": "Project",
+      "description": "Projects managed in the workspace"
+    },
+    "/projects/{projectId}/categories/{categoryId}": {
+      "schema": "Category",
+      "description": "Project specific category definitions"
+    },
+    "/projects/{projectId}/statuses/{statusId}": {
+      "schema": "Status",
+      "description": "Project specific Kanban board workflow statuses"
+    },
+    "/projects/{projectId}/tickets/{ticketId}": {
+      "schema": "Ticket",
+      "description": "Project issue and task tickets"
+    },
+    "/projects/{projectId}/tickets/{ticketId}/attachments/{attachmentId}": {
+      "schema": "Attachment",
+      "description": "Uploaded ticket files"
+    },
+    "/projects/{projectId}/tickets/{ticketId}/history/{historyId}": {
+      "schema": "TicketHistory",
+      "description": "Audit history and activity events"
+    }
+  }
+}

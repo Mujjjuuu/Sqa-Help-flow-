@@ -6,11 +6,14 @@ import {
   Filter,
   X,
   FileSpreadsheet,
+  FileCode,
+  FileText,
   BarChart2,
   Columns,
   FolderKanban,
   Download,
   AlertCircle,
+  ChevronDown,
 } from 'lucide-react';
 import { Button } from '../components/Button';
 import { BoardSkeleton } from '../components/Skeleton';
@@ -25,6 +28,7 @@ import { ticketService } from '../features/tickets/ticketService';
 import { statusService } from '../services/statusService';
 import { categoryService } from '../services/categoryService';
 import { reportService } from '../features/reports/reportService';
+import { exportUtils } from '../features/reports/exportUtils';
 import {
   Project,
   Ticket,
@@ -59,6 +63,7 @@ export const ProjectBoardPage: React.FC = () => {
   const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
   const [targetColumnForNewTicket, setTargetColumnForNewTicket] = useState<string | undefined>();
   const [reportData, setReportData] = useState<ProjectReportData | null>(null);
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
 
   const loadData = async (targetProjId?: string) => {
     setIsLoading(true);
@@ -284,24 +289,96 @@ export const ProjectBoardPage: React.FC = () => {
             </button>
           </div>
 
+          {/* Export Dropdown */}
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsExportMenuOpen(!isExportMenuOpen);
+              }}
+              leftIcon={<Download className="w-3.5 h-3.5" />}
+              rightIcon={<ChevronDown className="w-3 h-3 text-slate-400" />}
+              className="text-xs"
+            >
+              Export
+            </Button>
+
+            {isExportMenuOpen && (
+              <div
+                className="absolute right-0 top-full mt-1.5 w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-30 py-1 text-xs divide-y divide-slate-100"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                  Export Board Tickets ({filteredTickets.length})
+                </div>
+                <div className="py-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsExportMenuOpen(false);
+                      exportUtils.exportBulkTicketsPdf(
+                        filteredTickets,
+                        currentProject?.name || 'Project Tickets'
+                      );
+                    }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-slate-50 text-slate-700 flex items-center gap-2 cursor-pointer"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-rose-500" />
+                    <span>Export as PDF</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsExportMenuOpen(false);
+                      exportUtils.exportBulkTicketsExcel(
+                        filteredTickets,
+                        currentProject?.name || 'Project Tickets'
+                      );
+                    }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-slate-50 text-slate-700 flex items-center gap-2 cursor-pointer"
+                  >
+                    <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Export as Excel (.xlsx)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsExportMenuOpen(false);
+                      exportUtils.exportToCsv(
+                        filteredTickets,
+                        currentProject?.name || 'project_tickets'
+                      );
+                    }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-slate-50 text-slate-700 flex items-center gap-2 cursor-pointer"
+                  >
+                    <FileCode className="w-3.5 h-3.5 text-sky-600" />
+                    <span>Export as CSV</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           <Button
             variant="outline"
             size="sm"
             onClick={handleOpenReport}
-            leftIcon={<Download className="w-3.5 h-3.5" />}
             className="text-xs"
           >
-            Report
+            Report View
           </Button>
 
+          {/* Create Ticket Button (Shown specifically inside project board) */}
           <Button
             variant="primary"
             size="sm"
             onClick={() => handleOpenAddTicket()}
-            leftIcon={<Plus className="w-3.5 h-3.5" />}
-            className="text-xs"
+            leftIcon={<Plus className="w-4 h-4" />}
+            className="text-xs font-semibold shadow-xs"
           >
-            Add Ticket
+            Create Ticket
           </Button>
         </div>
       </div>

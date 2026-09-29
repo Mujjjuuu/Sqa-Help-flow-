@@ -1,0 +1,152 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Users
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId);
+      allow create: if isOwner(userId)
+        && incoming().keys().hasAll(['id', 'email', 'name', 'created_at'])
+        && incoming().keys().hasOnly(['id', 'email', 'name', 'avatar_url', 'created_at'])
+        && incoming().id == userId
+        && incoming().name is string && incoming().name.size() > 0 && incoming().name.size() <= 100
+        && incoming().email is string && incoming().email.size() <= 150;
+      allow update: if isOwner(userId)
+        && incoming().id == existing().id
+        && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'avatar_url'])
+        && (incoming().name is string && incoming().name.size() > 0 && incoming().name.size() <= 100);
+      allow delete: if false;
+    }
+
+    // Projects (Parent Resource)
+    match /projects/{projectId} {
+      function isValidProject(data) {
+        return data.keys().hasAll(['name', 'status', 'created_at', 'updated_at'])
+          && data.keys().hasOnly(['id', 'user_id', 'name', 'description', 'status', 'created_at', 'updated_at', 'archived_at'])
+          && data.name is string && data.name.size() > 0 && data.name.size() <= 120
+          && (!('description' in data) || (data.description is string && data.description.size() <= 1000))
+          && data.status in ['active', 'archived'];
+      }
+
+      allow read: if isSignedIn() && (
+        !('user_id' in resource.data) || resource.data.user_id == request.auth.uid || resource.data.user_id == null
+      );
+
+      allow create: if isSignedIn()
+        && isValidId(projectId)
+        && isValidProject(incoming())
+        && (!('user_id' in incoming()) || incoming().user_id == request.auth.uid);
+
+      allow update: if isSignedIn()
+        && isValidId(projectId)
+        && isValidProject(incoming())
+        && (
+          incoming().diff(existing()).affectedKeys().hasOnly(['name', 'description', 'status', 'updated_at', 'archived_at'])
+        );
+
+      allow delete: if isSignedIn() && isValidId(projectId);
+
+      // Categories Subcollection
+      match /categories/{categoryId} {
+        function isValidCategory(data) {
+          return data.keys().hasAll(['project_id', 'name', 'created_at'])
+            && data.keys().hasOnly(['id', 'project_id', 'name', 'created_at'])
+            && data.project_id == projectId
+            && data.name is string && data.name.size() > 0 && data.name.size() <= 60;
+        }
+
+        allow read: if isSignedIn();
+        allow create: if isSignedIn() && isValidId(categoryId) && isValidCategory(incoming());
+        allow update: if isSignedIn() && isValidId(categoryId) && isValidCategory(incoming())
+          && incoming().diff(existing()).affectedKeys().hasOnly(['name']);
+        allow delete: if isSignedIn() && isValidId(categoryId);
+      }
+
+      // Statuses Subcollection
+      match /statuses/{statusId} {
+        function isValidStatus(data) {
+          return data.keys().hasAll(['project_id', 'name', 'position', 'is_final', 'created_at'])
+            && data.keys().hasOnly(['id', 'project_id', 'name', 'position', 'is_final', 'created_at'])
+            && data.project_id == projectId
+            && data.name is string && data.name.size() > 0 && data.name.size() <= 60
+            && data.position is number
+            && data.is_final is bool;
+        }
+
+        allow read: if isSignedIn();
+        allow create: if isSignedIn() && isValidId(statusId) && isValidStatus(incoming());
+        allow update: if isSignedIn() && isValidId(statusId) && isValidStatus(incoming())
+          && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'position', 'is_final']);
+        allow delete: if isSignedIn() && isValidId(statusId);
+      }
+
+      // Tickets Subcollection
+      match /tickets/{ticketId} {
+        function isValidTicket(data) {
+          return data.keys().hasAll(['project_id', 'ticket_number', 'title', 'category_id', 'status_id', 'priority', 'created_at', 'updated_at'])
+            && data.keys().hasOnly(['id', 'project_id', 'ticket_number', 'title', 'description', 'notes', 'category_id', 'status_id', 'priority', 'due_date', 'created_at', 'updated_at'])
+            && data.project_id == projectId
+            && data.ticket_number is string && data.ticket_number.size() > 0 && data.ticket_number.size() <= 30
+            && data.title is string && data.title.size() > 0 && data.title.size() <= 200
+            && (!('description' in data) || (data.description is string && data.description.size() <= 5000))
+            && (!('notes' in data) || (data.notes is string && data.notes.size() <= 5000))
+            && data.priority in ['low', 'medium', 'high', 'urgent'];
+        }
+
+        allow read: if isSignedIn();
+        allow create: if isSignedIn() && isValidId(ticketId) && isValidTicket(incoming());
+        allow update: if isSignedIn() && isValidId(ticketId) && isValidTicket(incoming())
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'title', 'description', 'notes', 'category_id', 'status_id', 'priority', 'due_date', 'updated_at'
+          ]);
+        allow delete: if isSignedIn() && isValidId(ticketId);
+
+        // Attachments
+        match /attachments/{attachmentId} {
+          allow read: if isSignedIn();
+          allow create: if isSignedIn() && isValidId(attachmentId)
+            && incoming().keys().hasAll(['ticket_id', 'file_name', 'file_url', 'file_type', 'file_size', 'created_at'])
+            && incoming().ticket_id == ticketId
+            && incoming().file_name is string && incoming().file_name.size() <= 255;
+          allow update: if false;
+          allow delete: if isSignedIn() && isValidId(attachmentId);
+        }
+
+        // History
+        match /history/{historyId} {
+          allow read: if isSignedIn();
+          allow create: if isSignedIn() && isValidId(historyId)
+            && incoming().keys().hasAll(['ticket_id', 'action_type', 'created_at'])
+            && incoming().ticket_id == ticketId;
+          allow update, delete: if false;
+        }
+      }
+    }
+  }
+}

@@ -236,23 +236,33 @@ export const TicketForm: React.FC<TicketFormProps> = ({
           />
         </div>
 
-        {/* Description */}
-        <Textarea
-          label="Description"
-          placeholder="Detailed problem statement, reproduction steps, or requirements..."
-          rows={3}
-          error={errors.description?.message}
-          {...register('description')}
-        />
+        {/* Description Field */}
+        <div>
+          <Textarea
+            label="Description"
+            placeholder="Detailed problem statement, requirements, user story, or acceptance criteria..."
+            rows={3}
+            error={errors.description?.message}
+            {...register('description')}
+          />
+        </div>
 
-        {/* Notes */}
-        <Textarea
-          label="Implementation Notes"
-          placeholder="Technical considerations, edge cases, PR links, or memo..."
-          rows={2}
-          error={errors.notes?.message}
-          {...register('notes')}
-        />
+        {/* Notes Field (Separate from Description) */}
+        <div className="bg-amber-50/50 p-3.5 rounded-xl border border-amber-200/60 space-y-1.5">
+          <div className="flex items-center justify-between">
+            <label className="block text-xs font-bold text-amber-900 uppercase tracking-wider">
+              Notes
+            </label>
+            <span className="text-[11px] text-amber-700">Separate personal memos & execution ideas</span>
+          </div>
+          <Textarea
+            placeholder="Technical notes, scratchpad, edge cases, PR links, or personal memos..."
+            rows={2}
+            error={errors.notes?.message}
+            className="bg-white border-amber-300 focus:ring-amber-500"
+            {...register('notes')}
+          />
+        </div>
 
         {/* File Attachments (Only on creation or adding new) */}
         {!initialData && (
