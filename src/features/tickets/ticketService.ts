@@ -1,5 +1,6 @@
 import { Ticket, TicketFilterState } from '../../types';
 import { getSupabaseClient, isSupabaseConfigured } from '../../services/supabaseClient';
+import { firestoreService } from '../../services/firestoreService';
 import { localDB } from '../../services/localStore';
 import { historyService } from '../../services/historyService';
 import { attachmentService } from '../../services/attachmentService';
@@ -17,33 +18,44 @@ export const ticketService = {
   ): Promise<Ticket[]> {
     let tickets: Ticket[] = [];
 
-    const supabase = getSupabaseClient();
-    if (isSupabaseConfigured() && supabase) {
-      try {
-        let query = supabase.from('tickets').select(`
-          *,
-          status:statuses(*),
-          category:categories(*),
-          attachments:attachments(*),
-          history:ticket_history(*)
-        `);
+    try {
+      const fsTickets = await firestoreService.getTickets(projectId);
+      if (fsTickets && fsTickets.length > 0) {
+        tickets = fsTickets;
+      }
+    } catch (e) {
+      console.warn('Firestore getTickets note:', e);
+    }
 
-        if (projectId) {
-          query = query.eq('project_id', projectId);
-        }
+    if (tickets.length === 0) {
+      const supabase = getSupabaseClient();
+      if (isSupabaseConfigured() && supabase) {
+        try {
+          let query = supabase.from('tickets').select(`
+            *,
+            status:statuses(*),
+            category:categories(*),
+            attachments:attachments(*),
+            history:ticket_history(*)
+          `);
 
-        const { data, error } = await query.order('created_at', { ascending: false });
-        if (!error && data) {
-          tickets = data as Ticket[];
-        } else {
+          if (projectId) {
+            query = query.eq('project_id', projectId);
+          }
+
+          const { data, error } = await query.order('created_at', { ascending: false });
+          if (!error && data) {
+            tickets = data as Ticket[];
+          } else {
+            tickets = localDB.getTickets(projectId);
+          }
+        } catch (e) {
+          console.warn('Error fetching tickets from Supabase, using local:', e);
           tickets = localDB.getTickets(projectId);
         }
-      } catch (e) {
-        console.warn('Error fetching tickets from Supabase, using local:', e);
+      } else {
         tickets = localDB.getTickets(projectId);
       }
-    } else {
-      tickets = localDB.getTickets(projectId);
     }
 
     // Apply client filters if specified
@@ -166,6 +178,13 @@ export const ticketService = {
       updated_at: now,
     };
 
+    // Save to Firestore first
+    try {
+      await firestoreService.saveTicket(newTicket);
+    } catch (fsErr) {
+      console.warn('Firestore saveTicket note:', fsErr);
+    }
+
     const supabase = getSupabaseClient();
     let created: Ticket;
 
@@ -271,6 +290,12 @@ export const ticketService = {
       updated_at: new Date().toISOString(),
     };
 
+    try {
+      await firestoreService.saveTicket(updatedData);
+    } catch (fsErr) {
+      console.warn('Firestore updateTicket note:', fsErr);
+    }
+
     const supabase = getSupabaseClient();
     if (isSupabaseConfigured() && supabase) {
       const { data, error } = await supabase
@@ -320,6 +345,12 @@ export const ticketService = {
       updated_at: now,
     };
 
+    try {
+      await firestoreService.saveTicket(updatedTicket);
+    } catch (fsErr) {
+      console.warn('Firestore moveTicketStatus note:', fsErr);
+    }
+
     const supabase = getSupabaseClient();
     if (isSupabaseConfigured() && supabase) {
       await supabase
@@ -339,6 +370,15 @@ export const ticketService = {
    * Delete ticket and its dependencies
    */
   async deleteTicket(ticketId: string): Promise<void> {
+    const existing = await this.getTicketById(ticketId);
+    if (existing) {
+      try {
+        await firestoreService.deleteTicket(existing.project_id, ticketId);
+      } catch (fsErr) {
+        console.warn('Firestore deleteTicket note:', fsErr);
+      }
+    }
+
     const supabase = getSupabaseClient();
     if (isSupabaseConfigured() && supabase) {
       await supabase.from('tickets').delete().eq('id', ticketId);

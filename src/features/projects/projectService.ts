@@ -1,13 +1,20 @@
 import { Project, ProjectStats } from '../../types';
 import { getSupabaseClient, isSupabaseConfigured } from '../../services/supabaseClient';
+import { firestoreService } from '../../services/firestoreService';
 import { localDB } from '../../services/localStore';
 import { statusService } from '../../services/statusService';
 import { categoryService } from '../../services/categoryService';
 import { ProjectFormData } from './projectTypes';
-import { STATUS_COLORS } from '../../config/ticketStatuses';
 
 export const projectService = {
   async getProjects(): Promise<Project[]> {
+    try {
+      const projs = await firestoreService.getProjects();
+      if (projs && projs.length > 0) return projs;
+    } catch (e) {
+      console.warn('Firestore getProjects note:', e);
+    }
+
     const supabase = getSupabaseClient();
     if (isSupabaseConfigured() && supabase) {
       const { data, error } = await supabase
@@ -23,6 +30,13 @@ export const projectService = {
   },
 
   async getProjectById(id: string): Promise<Project | null> {
+    try {
+      const proj = await firestoreService.getProjectById(id);
+      if (proj) return proj;
+    } catch (e) {
+      console.warn('Firestore getProjectById note:', e);
+    }
+
     const supabase = getSupabaseClient();
     if (isSupabaseConfigured() && supabase) {
       const { data, error } = await supabase
@@ -51,32 +65,33 @@ export const projectService = {
       archived_at: null,
     };
 
+    // Save to Firestore first
+    try {
+      await firestoreService.saveProject(newProject);
+    } catch (err) {
+      console.warn('Firestore saveProject note:', err);
+    }
+
     const supabase = getSupabaseClient();
     if (isSupabaseConfigured() && supabase) {
-      const { data, error } = await supabase
+      await supabase
         .from('projects')
         .insert({
+          id: newProject.id,
           name: newProject.name,
           description: newProject.description,
           status: newProject.status,
           user_id: user?.id || newProject.user_id,
-        })
-        .select()
-        .single();
-
-      if (!error && data) {
-        const createdProj = data as Project;
-        // Initialize default statuses & categories
-        await statusService.getStatuses(createdProj.id);
-        await categoryService.getCategories(createdProj.id);
-        return createdProj;
-      }
+        });
     }
 
+    // Save locally
     const saved = localDB.saveProject(newProject);
-    // Initialize default statuses & categories
-    await statusService.getStatuses(saved.id);
-    await categoryService.getCategories(saved.id);
+
+    // Initialize default statuses & categories for this project
+    await statusService.getStatuses(newProject.id);
+    await categoryService.getCategories(newProject.id);
+
     return saved;
   },
 
@@ -86,14 +101,22 @@ export const projectService = {
 
     const updated: Project = {
       ...existing,
-      ...formData,
-      updated_at: new Date().toISOString(),
+      name: formData.name ? formData.name.trim() : existing.name,
+      description: formData.description !== undefined ? formData.description.trim() : existing.description,
+      status: formData.status || existing.status,
       archived_at: formData.status === 'archived' ? new Date().toISOString() : null,
+      updated_at: new Date().toISOString(),
     };
+
+    try {
+      await firestoreService.saveProject(updated);
+    } catch (err) {
+      console.warn('Firestore updateProject note:', err);
+    }
 
     const supabase = getSupabaseClient();
     if (isSupabaseConfigured() && supabase) {
-      const { data, error } = await supabase
+      await supabase
         .from('projects')
         .update({
           name: updated.name,
@@ -102,19 +125,19 @@ export const projectService = {
           archived_at: updated.archived_at,
           updated_at: updated.updated_at,
         })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (!error && data) {
-        return data as Project;
-      }
+        .eq('id', id);
     }
 
     return localDB.saveProject(updated);
   },
 
   async deleteProject(id: string): Promise<void> {
+    try {
+      await firestoreService.deleteProject(id);
+    } catch (err) {
+      console.warn('Firestore deleteProject note:', err);
+    }
+
     const supabase = getSupabaseClient();
     if (isSupabaseConfigured() && supabase) {
       await supabase.from('projects').delete().eq('id', id);

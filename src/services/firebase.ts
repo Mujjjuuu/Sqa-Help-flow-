@@ -5,6 +5,7 @@ import {
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signInAnonymously,
   updateProfile,
   signOut as fbSignOut,
   onAuthStateChanged,
@@ -117,6 +118,19 @@ export async function signUpWithEmail(name: string, email: string, pass: string)
   } catch (error) {
     console.error('Email Sign-up failed:', error);
     throw error;
+  }
+}
+
+export async function signInDemoAnonymously(): Promise<FirebaseUser | null> {
+  try {
+    const result = await signInAnonymously(auth);
+    if (result.user) {
+      await updateProfile(result.user, { displayName: 'Bob Official' });
+    }
+    return result.user;
+  } catch (error) {
+    console.error('Anonymous/Demo sign-in note:', error);
+    return null;
   }
 }
 
