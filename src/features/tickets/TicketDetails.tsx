@@ -381,7 +381,7 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity" onClick={onClose} />
         <div className="flex min-h-full items-center justify-center p-2 sm:p-4 text-left">
           <div
-            className="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full max-w-5xl lg:max-w-6xl border border-slate-200"
+            className="relative transform overflow-hidden rounded-2xl bg-white dark:bg-slate-900 text-left shadow-2xl transition-all w-full max-w-5xl lg:max-w-6xl border border-slate-200 dark:border-slate-800"
             onClick={(e) => {
               e.stopPropagation();
               if (isExportMenuOpen) setIsExportMenuOpen(false);
@@ -390,18 +390,18 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
             {/* ---------------------------------------------------- */}
             {/* Top Bar (Header Matching Screenshot)                 */}
             {/* ---------------------------------------------------- */}
-            <div className="px-6 py-3.5 border-b border-slate-200/90 flex items-center justify-between bg-white">
+            <div className="px-6 py-3.5 border-b border-slate-200/90 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
               <div className="flex items-center gap-2.5 flex-wrap">
-                <span className="text-xs font-medium px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+                <span className="text-xs font-medium px-2.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                   {ticketType}
                 </span>
 
-                <span className="font-mono text-xs font-bold text-slate-800">
+                <span className="font-mono text-xs font-bold text-slate-800 dark:text-slate-100">
                   {ticket.ticket_number}
                 </span>
 
                 {refCode && (
-                  <span className="font-mono text-xs text-slate-400">
+                  <span className="font-mono text-xs text-slate-400 dark:text-slate-500">
                     · {refCode}
                   </span>
                 )}
@@ -416,7 +416,7 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                       e.stopPropagation();
                       setIsExportMenuOpen(!isExportMenuOpen);
                     }}
-                    className="text-xs text-slate-500 hover:text-slate-800 px-2 py-1 rounded hover:bg-slate-100 flex items-center gap-1 cursor-pointer"
+                    className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1 cursor-pointer"
                   >
                     <span>Export</span>
                     <ChevronDown className="w-3 h-3" />
@@ -424,7 +424,7 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
 
                   {isExportMenuOpen && (
                     <div
-                      className="absolute right-0 top-full mt-1.5 w-44 bg-white border border-slate-200 rounded-xl shadow-lg z-30 py-1 text-xs divide-y divide-slate-100"
+                      className="absolute right-0 top-full mt-1.5 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg z-30 py-1 text-xs divide-y divide-slate-100 dark:divide-slate-800"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="py-1">
@@ -434,7 +434,7 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                             setIsExportMenuOpen(false);
                             exportUtils.exportSingleTicketPdf(ticket);
                           }}
-                          className="w-full text-left px-3 py-1.5 hover:bg-slate-50 text-slate-700 flex items-center gap-2 cursor-pointer"
+                          className="w-full text-left px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-2 cursor-pointer"
                         >
                           <FileText className="w-3.5 h-3.5 text-rose-500" />
                           <span>Export as PDF</span>
@@ -445,7 +445,7 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                             setIsExportMenuOpen(false);
                             exportUtils.exportSingleTicketExcel(ticket);
                           }}
-                          className="w-full text-left px-3 py-1.5 hover:bg-slate-50 text-slate-700 flex items-center gap-2 cursor-pointer"
+                          className="w-full text-left px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-2 cursor-pointer"
                         >
                           <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
                           <span>Export as Excel</span>
@@ -456,7 +456,7 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                             setIsExportMenuOpen(false);
                             exportUtils.exportSingleTicketCsv(ticket);
                           }}
-                          className="w-full text-left px-3 py-1.5 hover:bg-slate-50 text-slate-700 flex items-center gap-2 cursor-pointer"
+                          className="w-full text-left px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-2 cursor-pointer"
                         >
                           <FileCode className="w-3.5 h-3.5 text-sky-600" />
                           <span>Export as CSV</span>
@@ -469,7 +469,7 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsDeletingTicket(true)}
-                  className="text-xs text-slate-400 hover:text-rose-600 px-2 py-1 rounded hover:bg-rose-50 transition-colors cursor-pointer"
+                  className="text-xs text-slate-400 hover:text-rose-600 px-2 py-1 rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                   title="Delete ticket"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -478,7 +478,7 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="text-xs text-slate-400 hover:text-slate-800 px-2 py-1 rounded hover:bg-slate-100 cursor-pointer ml-1 font-medium"
+                  className="text-xs text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer ml-1 font-medium"
                 >
                   Close
                 </button>
@@ -486,8 +486,8 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
             </div>
 
             {/* Title Section */}
-            <div className="px-6 pt-5 pb-4 border-b border-slate-100 bg-white">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 leading-snug">
+            <div className="px-6 pt-5 pb-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 leading-snug">
                 {ticket.title}
               </h2>
             </div>
@@ -546,15 +546,15 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                         value={descValue}
                         onChange={(e) => setDescValue(e.target.value)}
                         rows={8}
-                        className="w-full text-xs sm:text-sm p-3.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-sans leading-relaxed text-slate-800 bg-white"
+                        className="w-full text-xs sm:text-sm p-3.5 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-sans leading-relaxed text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-950"
                         placeholder="Enter detailed description, issue details, current behavior, and expected behavior..."
                       />
                     ) : (
-                      <div className="text-xs sm:text-sm text-slate-700 whitespace-pre-wrap leading-relaxed space-y-2 bg-slate-50/50 p-4 rounded-xl border border-slate-200/70">
+                      <div className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed space-y-2 bg-slate-50/50 dark:bg-slate-800/40 p-4 rounded-xl border border-slate-200/70 dark:border-slate-800">
                         {ticket.description ? (
                           ticket.description
                         ) : (
-                          <div className="text-slate-400 italic">
+                          <div className="text-slate-400 dark:text-slate-500 italic">
                             No description provided. Click "Edit" to add structured requirements, reproduction steps, or expected behavior.
                           </div>
                         )}
@@ -563,13 +563,13 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                   </div>
 
                   {/* 2. Work Relay (Handover Pipeline) */}
-                  <div className="pt-2 border-t border-slate-100 space-y-3">
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <h4 className="text-xs font-bold text-slate-900 tracking-tight">
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                           Work relay
                         </h4>
-                        <span className="text-[11px] text-slate-400 font-medium">
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
                           {relay.current_stage === 'completed' || relay.qa_done ? '2 of 2 done' : '1 of 2 done'}
                         </span>
                       </div>
@@ -578,29 +578,29 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                     {/* Stepper Pipeline Cards */}
                     <div className="flex items-center gap-2 flex-wrap">
                       {/* Step 1: Frontend */}
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-medium">
-                        <div className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium">
+                        <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0">
                           <Check className="w-3 h-3 stroke-[2.5]" />
                         </div>
-                        <span className="font-semibold text-slate-700">1. FE</span>
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">1. FE</span>
                         <span className="text-slate-400">·</span>
-                        <span className="text-slate-600">{relay.fe_user || 'imran'}</span>
+                        <span className="text-slate-600 dark:text-slate-400">{relay.fe_user || 'imran'}</span>
                       </div>
 
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-300" />
+                      <ArrowRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600" />
 
                       {/* Step 2: QA */}
                       <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium ${
                         relay.qa_done
-                          ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                          : 'bg-indigo-50/70 border-indigo-200 text-indigo-900'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300'
+                          : 'bg-indigo-50/70 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-800 text-indigo-900 dark:text-indigo-300'
                       }`}>
                         {relay.qa_done ? (
                           <div className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0">
                             <Check className="w-3 h-3 stroke-[2.5]" />
                           </div>
                         ) : (
-                          <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse shrink-0" />
+                          <span className="w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-400 animate-pulse shrink-0" />
                         )}
                         <span className="font-bold">2. QA • NOW</span>
                         <span className="text-slate-400">·</span>
@@ -609,16 +609,16 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                     </div>
 
                     {/* QA Handover Box */}
-                    <div className="p-3 rounded-xl border border-slate-200 bg-slate-50/60 text-xs space-y-2">
-                      <div className="flex items-center justify-between text-slate-500">
-                        <span className="font-bold text-[11px] text-slate-600 uppercase tracking-wider">
+                    <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-xs space-y-2">
+                      <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                        <span className="font-bold text-[11px] text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                           QA HANDOVER · {relay.qa_user || 'Mujtaba Bilal'}
                         </span>
                         {!isAddingHandoverNote && (
                           <button
                             type="button"
                             onClick={() => setIsAddingHandoverNote(true)}
-                            className="text-indigo-600 hover:text-indigo-800 font-semibold text-xs cursor-pointer"
+                            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 font-semibold text-xs cursor-pointer"
                           >
                             {relay.handover_notes ? 'Edit' : 'Add'}
                           </button>
@@ -632,13 +632,13 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                             onChange={(e) => setHandoverNoteInput(e.target.value)}
                             placeholder="Add QA handover notes, instructions, testing credentials, or edge cases..."
                             rows={2}
-                            className="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            className="w-full text-xs p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                           />
                           <div className="flex items-center justify-end gap-2">
                             <button
                               type="button"
                               onClick={() => setIsAddingHandoverNote(false)}
-                              className="text-xs text-slate-500 hover:text-slate-800"
+                              className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                             >
                               Cancel
                             </button>
@@ -653,7 +653,7 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                           </div>
                         </div>
                       ) : (
-                        <p className="text-slate-500 italic">
+                        <p className="text-slate-500 dark:text-slate-400 italic">
                           {relay.handover_notes || 'Nothing recorded yet — optional, and the relay works without it.'}
                         </p>
                       )}
@@ -676,32 +676,32 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                         size="sm"
                         onClick={handleRelayHandBack}
                         leftIcon={<RotateCcw className="w-3.5 h-3.5 text-slate-500" />}
-                        className="text-xs text-slate-700"
+                        className="text-xs text-slate-700 dark:text-slate-300"
                       >
                         Hand back
                       </Button>
                     </div>
 
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500">
                       You are last — clicking this finishes the relay. The column is yours to move
                     </p>
                   </div>
 
                   {/* 3. Time & Cycle Tracking */}
-                  <div className="pt-2 border-t border-slate-100 space-y-3">
-                    <div className="flex items-center gap-2 text-xs text-slate-500 flex-wrap">
-                      <span className="font-bold text-slate-900">Time</span>
-                      <span>dev: <strong className="text-slate-700">{timeTracking.dev_time_str}</strong></span>
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                    <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
+                      <span className="font-bold text-slate-900 dark:text-slate-100">Time</span>
+                      <span>dev: <strong className="text-slate-700 dark:text-slate-300">{timeTracking.dev_time_str}</strong></span>
                       <span>·</span>
-                      <span>qa: <strong className="text-slate-700">{timeTracking.qa_time_str}</strong></span>
+                      <span>qa: <strong className="text-slate-700 dark:text-slate-300">{timeTracking.qa_time_str}</strong></span>
                       <span>·</span>
-                      <span><strong className="text-slate-700">{timeTracking.cycles}</strong> cycles</span>
+                      <span><strong className="text-slate-700 dark:text-slate-300">{timeTracking.cycles}</strong> cycles</span>
                       <span>·</span>
-                      <span>total: <strong className="text-slate-900">{timeTracking.total_time_str}</strong></span>
+                      <span>total: <strong className="text-slate-900 dark:text-slate-100">{timeTracking.total_time_str}</strong></span>
                     </div>
 
                     {/* Segmented Color Timeline Bar */}
-                    <div className="w-full h-2 rounded-full overflow-hidden bg-slate-100 flex">
+                    <div className="w-full h-2 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800 flex">
                       <div className="h-full bg-sky-500 w-[45%]" title="Dev: 45%" />
                       <div className="h-full bg-amber-500 w-[20%]" title="QA Cycle 1: 20%" />
                       <div className="h-full bg-indigo-500 w-[20%]" title="Dev Cycle 2: 20%" />
@@ -709,24 +709,24 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                     </div>
 
                     {/* Timeline Stage History List */}
-                    <div className="space-y-1.5 pt-1 text-xs text-slate-600 font-mono">
+                    <div className="space-y-1.5 pt-1 text-xs text-slate-600 dark:text-slate-400 font-mono">
                       {timeTracking.stages.map((st, idx) => (
                         <div key={idx} className="flex items-center justify-between gap-2 py-0.5">
                           <div className="flex items-center gap-2 truncate">
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
-                            <span className="font-semibold text-slate-800">
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-600 shrink-0" />
+                            <span className="font-semibold text-slate-800 dark:text-slate-200">
                               {st.stage}
                               {st.cycle ? `: cycle ${st.cycle}` : ''}
                             </span>
-                            <span className="text-slate-400 font-sans text-[11px]">
+                            <span className="text-slate-400 dark:text-slate-500 font-sans text-[11px]">
                               moved by {st.moved_by}
                               {st.is_current ? ' · still here' : ''}
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-3 shrink-0 text-slate-400 text-[11px]">
+                          <div className="flex items-center gap-3 shrink-0 text-slate-400 dark:text-slate-500 text-[11px]">
                             <span>{st.timestamp}</span>
-                            <span className="font-bold text-slate-700 w-14 text-right">
+                            <span className="font-bold text-slate-700 dark:text-slate-300 w-14 text-right">
                               {st.duration_str}
                             </span>
                           </div>
@@ -736,20 +736,20 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                   </div>
 
                   {/* 4. Attachments (Cards matching update.jpg) */}
-                  <div className="pt-2 border-t border-slate-100 space-y-3">
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <h4 className="text-xs font-bold text-slate-900 tracking-tight">
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                           Attachments
                         </h4>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-slate-400 dark:text-slate-500">
                           {totalAttachments} • {formatFileSize(totalAttachmentBytes)}
                         </span>
                       </div>
                     </div>
 
                     {/* Choose files & Drag info */}
-                    <div className="p-3 rounded-xl border border-dashed border-slate-300 bg-slate-50/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div className="p-3 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/40 dark:bg-slate-800/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                       <div className="flex items-center gap-2">
                         <input
                           ref={fileInputRef}
@@ -783,7 +783,7 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                         {ticket.attachments?.map((att, idx) => (
                           <div
                             key={att.id}
-                            className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-2xs flex flex-col justify-between"
+                            className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-2xs flex flex-col justify-between"
                           >
                             {/* Image Thumbnail Preview */}
                             <div
@@ -791,7 +791,7 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                                 const imgIdx = allUploadedImages.findIndex((img) => img.url === att.file_url);
                                 handleOpenImageGallery(imgIdx >= 0 ? imgIdx : 0);
                               }}
-                              className="h-28 w-full bg-slate-100 relative group/att cursor-pointer overflow-hidden border-b border-slate-100"
+                              className="h-28 w-full bg-slate-100 dark:bg-slate-800 relative group/att cursor-pointer overflow-hidden border-b border-slate-100 dark:border-slate-800"
                             >
                               {att.file_type?.startsWith('image/') || /\.(png|jpe?g|webp|gif|svg)$/i.test(att.file_name) ? (
                                 <img
@@ -800,7 +800,7 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                                   className="w-full h-full object-cover group-hover/att:scale-102 transition-transform duration-200"
                                 />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-500">
                                   <Paperclip className="w-8 h-8" />
                                 </div>
                               )}
@@ -813,13 +813,13 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                             {/* Card Footer Details */}
                             <div className="p-3 text-xs flex items-center justify-between gap-2">
                               <div className="min-w-0">
-                                <span className="font-bold text-slate-800 block truncate" title={att.file_name}>
+                                <span className="font-bold text-slate-800 dark:text-slate-200 block truncate" title={att.file_name}>
                                   {att.file_name}
                                 </span>
-                                <span className="text-[10px] text-slate-400 block">
+                                <span className="text-[10px] text-slate-400 dark:text-slate-500 block">
                                   {formatFileSize(att.file_size)} · uncompressed
                                 </span>
-                                <span className="text-[10px] text-slate-400 block">
+                                <span className="text-[10px] text-slate-400 dark:text-slate-500 block">
                                   {reporterName} · 4h ago
                                 </span>
                               </div>
@@ -831,19 +831,19 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                                     const imgIdx = allUploadedImages.findIndex((img) => img.url === att.file_url);
                                     handleOpenImageGallery(imgIdx >= 0 ? imgIdx : 0);
                                   }}
-                                  className="text-slate-500 hover:text-slate-900 font-medium cursor-pointer"
+                                  className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 font-medium cursor-pointer"
                                 >
                                   View
                                 </button>
-                                <span className="text-slate-300">·</span>
+                                <span className="text-slate-300 dark:text-slate-700">·</span>
                                 <button
                                   type="button"
                                   onClick={() => attachmentService.downloadAttachment(att)}
-                                  className="text-slate-500 hover:text-slate-900 font-medium cursor-pointer"
+                                  className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 font-medium cursor-pointer"
                                 >
                                   Download
                                 </button>
-                                <span className="text-slate-300">·</span>
+                                <span className="text-slate-300 dark:text-slate-700">·</span>
                                 <button
                                   type="button"
                                   onClick={() => setAttachmentToDelete(att)}
@@ -994,22 +994,22 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                 {/* ================================================= */}
                 {/* RIGHT SIDEBAR: Status, Severity, Assignments, Dates*/}
                 {/* ================================================= */}
-                <div className="lg:col-span-4 space-y-5 lg:border-l lg:border-slate-100 lg:pl-6">
+                <div className="lg:col-span-4 space-y-5 lg:border-l lg:border-slate-100 dark:lg:border-slate-800 lg:pl-6">
                   {/* Status */}
                   <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-slate-600">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">
                       Status
                     </label>
                     <div className="relative">
                       <select
                         value={ticket.status_id}
                         onChange={(e) => onStatusChange(ticket.id, e.target.value)}
-                        className="w-full text-xs font-medium bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none shadow-2xs"
+                        className="w-full text-xs font-medium bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none shadow-2xs"
                       >
                         {statuses
                           .filter((s, idx, arr) => arr.findIndex((x) => x.id === s.id) === idx)
                           .map((s) => (
-                            <option key={s.id} value={s.id}>
+                            <option key={s.id} value={s.id} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">
                               {s.name}
                             </option>
                           ))}
@@ -1020,55 +1020,55 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
 
                   {/* Severity */}
                   <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-slate-600">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">
                       Severity
                     </label>
                     <div className="relative">
                       <select
                         value={severity}
                         onChange={(e) => handleUpdateField({ severity: e.target.value as TicketSeverity })}
-                        className="w-full text-xs font-medium bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none shadow-2xs capitalize"
+                        className="w-full text-xs font-medium bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none shadow-2xs capitalize"
                       >
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                        <option value="critical">Critical</option>
+                        <option value="low" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Low</option>
+                        <option value="medium" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Medium</option>
+                        <option value="high" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">High</option>
+                        <option value="critical" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Critical</option>
                       </select>
                       <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
-                    <p className="text-[11px] text-slate-400 leading-tight pt-0.5">
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-tight pt-0.5">
                       How hard it is in production — separate from priority, which is when it gets done.
                     </p>
                   </div>
 
                   {/* Dev mask */}
                   <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-slate-600">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">
                       Dev mask
                     </label>
                     <div className="relative">
                       <select
                         value={devMask}
                         onChange={(e) => handleUpdateField({ dev_mask: e.target.value as TicketDevMask })}
-                        className="w-full text-xs font-medium bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none shadow-2xs capitalize"
+                        className="w-full text-xs font-medium bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none shadow-2xs capitalize"
                       >
-                        <option value="frontend">Frontend</option>
-                        <option value="backend">Backend</option>
-                        <option value="flutter">Flutter</option>
-                        <option value="fullstack">Fullstack</option>
-                        <option value="devops">DevOps</option>
-                        <option value="qa">QA</option>
+                        <option value="frontend" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Frontend</option>
+                        <option value="backend" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Backend</option>
+                        <option value="flutter" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Flutter</option>
+                        <option value="fullstack" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Fullstack</option>
+                        <option value="devops" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">DevOps</option>
+                        <option value="qa" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">QA</option>
                       </select>
                       <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
-                    <p className="text-[11px] text-slate-400 leading-tight pt-0.5">
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-tight pt-0.5">
                       Rails credit list dev check in each branch full, not half in each
                     </p>
                   </div>
 
                   {/* Colour Swatch Picker */}
                   <div className="space-y-1.5 pt-1">
-                    <label className="block text-xs font-semibold text-slate-600">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">
                       Colour
                     </label>
                     <div className="flex items-center gap-1.5 flex-wrap">
@@ -1079,7 +1079,7 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                           onClick={() => handleUpdateField({ color: swatch.id })}
                           className={`w-5 h-5 rounded-full ${swatch.bg} ${swatch.border} border transition-all cursor-pointer ${
                             currentColor === swatch.id
-                              ? 'ring-2 ring-offset-2 ring-slate-800 scale-110'
+                              ? 'ring-2 ring-offset-2 ring-slate-800 dark:ring-slate-300 scale-110'
                               : 'hover:scale-105'
                           }`}
                           title={`Color: ${swatch.label}`}
@@ -1089,12 +1089,12 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                   </div>
 
                   {/* Work assignments (4 roles) */}
-                  <div className="space-y-2.5 pt-2 border-t border-slate-100">
+                  <div className="space-y-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
                     <div className="flex items-center justify-between">
-                      <label className="block text-xs font-semibold text-slate-700">
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                         Work assignments
                       </label>
-                      <span className="text-[11px] text-slate-400">
+                      <span className="text-[11px] text-slate-400 dark:text-slate-500">
                         {pulledCount} of 4 pulled
                       </span>
                     </div>
@@ -1102,15 +1102,15 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                     <div className="space-y-2 text-xs">
                       {/* Backend */}
                       <div className="space-y-1">
-                        <span className="text-[11px] text-slate-500 block">Backend</span>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Backend</span>
                         <div className="relative">
                           <select
                             value={assignments.backend || 'Nobody yet'}
                             onChange={(e) => handleUpdateAssignment('backend', e.target.value)}
-                            className="w-full text-xs font-medium bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none shadow-2xs"
+                            className="w-full text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none shadow-2xs"
                           >
                             {TEAM_MEMBERS.map((m) => (
-                              <option key={m} value={m}>
+                              <option key={m} value={m} className="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">
                                 {m}
                               </option>
                             ))}
@@ -1121,15 +1121,15 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
 
                       {/* Frontend */}
                       <div className="space-y-1">
-                        <span className="text-[11px] text-slate-500 block">Frontend</span>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Frontend</span>
                         <div className="relative">
                           <select
                             value={assignments.frontend || 'imran'}
                             onChange={(e) => handleUpdateAssignment('frontend', e.target.value)}
-                            className="w-full text-xs font-medium bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none shadow-2xs"
+                            className="w-full text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none shadow-2xs"
                           >
                             {TEAM_MEMBERS.map((m) => (
-                              <option key={m} value={m}>
+                              <option key={m} value={m} className="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">
                                 {m}
                               </option>
                             ))}
@@ -1140,15 +1140,15 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
 
                       {/* Flutter */}
                       <div className="space-y-1">
-                        <span className="text-[11px] text-slate-500 block">Flutter</span>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Flutter</span>
                         <div className="relative">
                           <select
                             value={assignments.flutter || 'Nobody yet'}
                             onChange={(e) => handleUpdateAssignment('flutter', e.target.value)}
-                            className="w-full text-xs font-medium bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none shadow-2xs"
+                            className="w-full text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none shadow-2xs"
                           >
                             {TEAM_MEMBERS.map((m) => (
-                              <option key={m} value={m}>
+                              <option key={m} value={m} className="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">
                                 {m}
                               </option>
                             ))}
@@ -1159,15 +1159,15 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
 
                       {/* QA */}
                       <div className="space-y-1">
-                        <span className="text-[11px] text-slate-500 block">QA</span>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 block">QA</span>
                         <div className="relative">
                           <select
                             value={assignments.qa || 'Mujtaba Bilal'}
                             onChange={(e) => handleUpdateAssignment('qa', e.target.value)}
-                            className="w-full text-xs font-medium bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none shadow-2xs"
+                            className="w-full text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer appearance-none shadow-2xs"
                           >
                             {TEAM_MEMBERS.map((m) => (
-                              <option key={m} value={m}>
+                              <option key={m} value={m} className="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">
                                 {m}
                               </option>
                             ))}
@@ -1179,46 +1179,46 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({
                   </div>
 
                   {/* Reporter */}
-                  <div className="pt-2 border-t border-slate-100 space-y-1.5">
-                    <span className="text-xs font-semibold text-slate-600 block">Reporter</span>
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
+                    <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 block">Reporter</span>
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-[10px] flex items-center justify-center shrink-0">
                         {reporterName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
                       </div>
-                      <span className="text-xs font-medium text-slate-800">{reporterName}</span>
+                      <span className="text-xs font-medium text-slate-800 dark:text-slate-200">{reporterName}</span>
                     </div>
                   </div>
 
                   {/* Dates */}
-                  <div className="pt-2 border-t border-slate-100 space-y-3 text-xs">
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-3 text-xs">
                     {/* Start Date */}
                     <div className="space-y-1">
-                      <span className="text-[11px] font-semibold text-slate-600 block">Start date</span>
+                      <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 block">Start date</span>
                       <div className="relative">
                         <input
                           type="date"
                           value={ticket.start_date ? ticket.start_date.slice(0, 10) : ''}
                           onChange={(e) => handleUpdateField({ start_date: e.target.value ? new Date(e.target.value).toISOString() : null })}
-                          className="w-full text-xs bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                          className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
                         />
                       </div>
                     </div>
 
                     {/* Due Date */}
                     <div className="space-y-1">
-                      <span className="text-[11px] font-semibold text-slate-600 block">Due date</span>
+                      <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 block">Due date</span>
                       <div className="relative">
                         <input
                           type="date"
                           value={ticket.due_date ? ticket.due_date.slice(0, 10) : ''}
                           onChange={(e) => handleUpdateField({ due_date: e.target.value ? new Date(e.target.value).toISOString() : null })}
-                          className="w-full text-xs bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                          className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
                         />
                       </div>
                     </div>
 
                     {/* Timestamps */}
-                    <div className="pt-2 border-t border-slate-100 space-y-1 text-[11px] text-slate-400">
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1 text-[11px] text-slate-400 dark:text-slate-500">
                       <div>Created {new Date(ticket.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</div>
                       <div>Updated {new Date(ticket.updated_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</div>
                     </div>

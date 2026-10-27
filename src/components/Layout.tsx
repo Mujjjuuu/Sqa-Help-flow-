@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
@@ -15,7 +15,15 @@ export const Layout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  // Persist collapsed sidebar state
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('krum_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState('');
 
@@ -26,6 +34,36 @@ export const Layout: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [statuses, setStatuses] = useState<Status[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+
+  // Toggle handler that persists to localStorage
+  const handleToggleSidebar = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('krum_sidebar_collapsed', String(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  // Global keyboard shortcuts: `[` or `Ctrl+B` / `Cmd+B` to toggle sidebar, `Cmd+N` for new project
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger if user is typing in an input or textarea
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return;
+      }
+
+      if ((e.key === 'b' && (e.ctrlKey || e.metaKey)) || e.key === '[') {
+        e.preventDefault();
+        handleToggleSidebar();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const loadGlobalContext = async () => {
     try {
@@ -58,7 +96,7 @@ export const Layout: React.FC = () => {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     loadGlobalContext();
   }, []);
 
@@ -82,12 +120,12 @@ export const Layout: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-900">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden font-sans text-slate-900 dark:text-slate-100 transition-colors">
       {/* Desktop & Tablet Sidebar */}
       <div className="hidden md:flex shrink-0">
         <Sidebar
           isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          onToggleCollapse={handleToggleSidebar}
           onOpenNewProject={() => setIsGlobalProjectModalOpen(true)}
         />
       </div>
@@ -96,10 +134,10 @@ export const Layout: React.FC = () => {
       {isMobileDrawerOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs"
+            className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"
             onClick={() => setIsMobileDrawerOpen(false)}
           />
-          <div className="relative z-10 w-64 h-full bg-white shadow-xl">
+          <div className="relative z-10 w-64 h-full bg-white dark:bg-slate-900 shadow-2xl animate-in slide-in-from-left duration-250">
             <Sidebar
               isCollapsed={false}
               onToggleCollapse={() => {}}
@@ -117,6 +155,8 @@ export const Layout: React.FC = () => {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Navbar
           onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
+          isSidebarCollapsed={isSidebarCollapsed}
+          onToggleSidebar={handleToggleSidebar}
           searchValue={globalSearch}
           onSearchChange={handleGlobalSearchChange}
         />
@@ -145,7 +185,7 @@ export const Layout: React.FC = () => {
         onSubmit={handleCreateGlobalProject}
       />
 
-      {/* Floating Gemini Chatbot (Bottom Left) */}
+      {/* Floating Gemini AI Assistant */}
       <GeminiChatBot />
     </div>
   );

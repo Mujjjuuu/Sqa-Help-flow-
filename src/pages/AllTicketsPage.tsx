@@ -314,17 +314,17 @@ export const AllTicketsPage: React.FC = () => {
       </div>
 
       {/* Filter Card */}
-      <Card className="p-4 bg-white space-y-3">
+      <Card className="p-4 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-3">
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           {/* Search Input */}
           <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by Ticket ID, Title, Description, Notes..."
-              className="w-full text-xs pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900"
+              className="w-full text-xs pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
 
@@ -513,10 +513,10 @@ export const AllTicketsPage: React.FC = () => {
           onAction={hasActiveFilters ? clearFilters : () => setIsTicketFormOpen(true)}
         />
       ) : (
-        <Card className="overflow-hidden bg-white">
+        <Card className="overflow-hidden bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200/80 text-slate-600 font-semibold select-none">
+              <thead className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-semibold select-none">
                 <tr>
                   <th className="py-3 px-4 w-10">
                     <input
@@ -526,7 +526,7 @@ export const AllTicketsPage: React.FC = () => {
                         selectedTicketIds.size === filteredTickets.length
                       }
                       onChange={handleToggleSelectAll}
-                      className="rounded border-slate-300 text-slate-900 focus:ring-slate-900 cursor-pointer"
+                      className="rounded border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                     />
                   </th>
                   <th className="py-3 px-3">Ticket ID</th>
@@ -539,7 +539,7 @@ export const AllTicketsPage: React.FC = () => {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-800 dark:text-slate-200">
                 {filteredTickets.map((t) => {
                   const isChecked = selectedTicketIds.has(t.id);
                   const prio = PRIORITY_CONFIG[t.priority] || PRIORITY_CONFIG.medium;
@@ -548,8 +548,8 @@ export const AllTicketsPage: React.FC = () => {
                   return (
                     <tr
                       key={t.id}
-                      className={`hover:bg-slate-50/70 transition-colors ${
-                        isChecked ? 'bg-slate-50/90' : ''
+                      className={`hover:bg-slate-50/70 dark:hover:bg-slate-800/60 transition-colors ${
+                        isChecked ? 'bg-slate-50/90 dark:bg-slate-800/80' : ''
                       }`}
                     >
                       <td className="py-3 px-4">
@@ -557,17 +557,17 @@ export const AllTicketsPage: React.FC = () => {
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => handleToggleSelectOne(t.id)}
-                          className="rounded border-slate-300 text-slate-900 focus:ring-slate-900 cursor-pointer"
+                          className="rounded border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                         />
                       </td>
 
                       <td className="py-3 px-3">
-                        <span className="font-mono font-bold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded text-[11px]">
+                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[11px] border border-slate-200/70 dark:border-slate-700">
                           {t.ticket_number}
                         </span>
                       </td>
 
-                      <td className="py-3 px-3 font-medium text-slate-900 max-w-sm">
+                      <td className="py-3 px-3 font-medium text-slate-900 dark:text-slate-100 max-w-sm">
                         <div className="flex items-center gap-2">
                           {/* Mini Thumbnail or Image Icon if ticket has images */}
                           {(() => {

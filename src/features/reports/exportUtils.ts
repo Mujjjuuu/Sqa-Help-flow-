@@ -159,7 +159,7 @@ export const exportUtils = {
       doc.setFontSize(8);
       doc.setTextColor(148, 163, 184);
       doc.text(
-        `Exported from Kanso Workspace • ${ticket.ticket_number} • Page ${i} of ${pageCount}`,
+        `Exported from KRUM Workspace • ${ticket.ticket_number} • Page ${i} of ${pageCount}`,
         14,
         287
       );

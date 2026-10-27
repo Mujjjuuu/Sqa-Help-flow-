@@ -141,16 +141,16 @@ export const FilesPage: React.FC = () => {
       </div>
 
       {/* Filter Bar */}
-      <Card className="p-3 bg-white space-y-3">
+      <Card className="p-3 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 space-y-3">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="relative flex-1 max-w-sm">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search file name, ticket number..."
-              className="w-full text-xs pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900"
+              className="w-full text-xs pl-9 pr-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
 
@@ -159,11 +159,11 @@ export const FilesPage: React.FC = () => {
             <select
               value={selectedTicketId}
               onChange={(e) => setSelectedTicketId(e.target.value)}
-              className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-900"
+              className="text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             >
-              <option value="">All Tickets</option>
+              <option value="" className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">All Tickets</option>
               {tickets.map((t) => (
-                <option key={t.id} value={t.id}>
+                <option key={t.id} value={t.id} className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">
                   {t.ticket_number} - {t.title.slice(0, 24)}...
                 </option>
               ))}
@@ -173,16 +173,16 @@ export const FilesPage: React.FC = () => {
             <select
               value={selectedFileType}
               onChange={(e) => setSelectedFileType(e.target.value)}
-              className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-900"
+              className="text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             >
-              <option value="">All Types</option>
-              <option value="pdf">PDF</option>
-              <option value="png">PNG</option>
-              <option value="jpg">JPG</option>
-              <option value="docx">DOCX</option>
-              <option value="xlsx">XLSX</option>
-              <option value="zip">ZIP</option>
-              <option value="txt">TXT</option>
+              <option value="" className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">All Types</option>
+              <option value="pdf" className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">PDF</option>
+              <option value="png" className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">PNG</option>
+              <option value="jpg" className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">JPG</option>
+              <option value="docx" className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">DOCX</option>
+              <option value="xlsx" className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">XLSX</option>
+              <option value="zip" className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">ZIP</option>
+              <option value="txt" className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">TXT</option>
             </select>
 
             {/* Date filter */}
@@ -190,7 +190,7 @@ export const FilesPage: React.FC = () => {
               type="date"
               value={filterDate}
               onChange={(e) => setFilterDate(e.target.value)}
-              className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-900"
+              className="text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
 
             {hasFilters && (
@@ -198,7 +198,7 @@ export const FilesPage: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 onClick={clearFilters}
-                className="text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                className="text-xs text-rose-600 dark:text-rose-400 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40"
               >
                 <X className="w-3.5 h-3.5 mr-1" />
                 Clear
@@ -222,10 +222,10 @@ export const FilesPage: React.FC = () => {
           }
         />
       ) : (
-        <Card className="overflow-hidden bg-white">
+        <Card className="overflow-hidden bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200/80 text-slate-600 font-semibold">
+              <thead className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-semibold">
                 <tr>
                   <th className="py-3 px-4">File Name</th>
                   <th className="py-3 px-3">Ticket ID</th>
@@ -236,7 +236,7 @@ export const FilesPage: React.FC = () => {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-800 dark:text-slate-200">
                 {filteredFiles.map((file) => (
                   <tr key={file.id} className="hover:bg-slate-50/70 transition-colors">
                     <td className="py-3 px-4">

@@ -268,12 +268,12 @@ export const TicketCommentsSection: React.FC<TicketCommentsSectionProps> = ({
       {/* Comments List */}
       <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
         {isLoading ? (
-          <div className="py-6 text-center text-xs text-slate-400">Loading comments...</div>
+          <div className="py-6 text-center text-xs text-slate-400 dark:text-slate-500">Loading comments...</div>
         ) : comments.length === 0 ? (
-          <div className="py-6 text-center rounded-xl border border-dashed border-slate-200 bg-slate-50/50">
-            <MessageSquare className="w-6 h-6 text-slate-300 mx-auto mb-1.5" />
-            <p className="text-xs text-slate-500 font-medium">No comments yet</p>
-            <p className="text-[11px] text-slate-400 mt-0.5">
+          <div className="py-6 text-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+            <MessageSquare className="w-6 h-6 text-slate-300 dark:text-slate-600 mx-auto mb-1.5" />
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">No comments yet</p>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
               Upload images, leave notes, speak to transcribe, or record voice memos below.
             </p>
           </div>
@@ -281,17 +281,17 @@ export const TicketCommentsSection: React.FC<TicketCommentsSectionProps> = ({
           comments.map((comment) => (
             <div
               key={comment.id}
-              className="p-3.5 rounded-xl border border-slate-200/90 bg-white hover:border-slate-300 transition-all shadow-2xs space-y-2 group"
+              className="p-3.5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-2xs space-y-2 group"
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 font-bold text-[10px] flex items-center justify-center shrink-0">
+                  <div className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 font-bold text-[10px] flex items-center justify-center shrink-0">
                     {comment.user_name.slice(0, 2).toUpperCase()}
                   </div>
-                  <span className="font-semibold text-xs text-slate-800 truncate">
+                  <span className="font-semibold text-xs text-slate-800 dark:text-slate-200 truncate">
                     {comment.user_name}
                   </span>
-                  <span className="text-[10px] text-slate-400 font-mono">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
                     {new Date(comment.created_at).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',
@@ -302,13 +302,13 @@ export const TicketCommentsSection: React.FC<TicketCommentsSectionProps> = ({
 
                 <div className="flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
                   {comment.images && comment.images.length > 0 && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                       <ImageIcon className="w-2.5 h-2.5" />
                       {comment.images.length} {comment.images.length === 1 ? 'image' : 'images'}
                     </span>
                   )}
                   {comment.is_voice_message && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/60">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800">
                       <Volume2 className="w-2.5 h-2.5" />
                       Voice Note
                     </span>
@@ -316,7 +316,7 @@ export const TicketCommentsSection: React.FC<TicketCommentsSectionProps> = ({
                   <button
                     type="button"
                     onClick={() => handleDeleteComment(comment.id)}
-                    className="p-1 text-slate-400 hover:text-rose-600 rounded-md hover:bg-rose-50 transition-colors cursor-pointer"
+                    className="p-1 text-slate-400 hover:text-rose-600 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                     title="Delete comment"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -336,7 +336,7 @@ export const TicketCommentsSection: React.FC<TicketCommentsSectionProps> = ({
 
               {/* Text content or transcription */}
               {comment.content && (
-                <p className="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed pt-0.5">
+                <p className="text-xs text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed pt-0.5">
                   {comment.content}
                 </p>
               )}
@@ -348,7 +348,7 @@ export const TicketCommentsSection: React.FC<TicketCommentsSectionProps> = ({
                     <div
                       key={imgIdx}
                       onClick={() => handleOpenCommentImageLightbox(comment, imgIdx)}
-                      className="group/img relative w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-slate-200/80 bg-slate-50 cursor-pointer shadow-2xs hover:shadow-md transition-all hover:scale-102"
+                      className="group/img relative w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 cursor-pointer shadow-2xs hover:shadow-md transition-all hover:scale-102"
                       title="Click to expand full screen"
                     >
                       <img
@@ -486,7 +486,7 @@ export const TicketCommentsSection: React.FC<TicketCommentsSectionProps> = ({
             onPaste={handleCommentPaste}
             placeholder="Write a comment, paste screenshot (Ctrl+V), or click mic/image buttons..."
             rows={2}
-            className="w-full text-xs p-3 pr-28 rounded-xl border border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-900 text-slate-800 placeholder-slate-400 bg-white leading-relaxed resize-none"
+            className="w-full text-xs p-3 pr-28 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-900 dark:focus:ring-slate-400 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 bg-white dark:bg-slate-900 leading-relaxed resize-none"
           />
 
           {/* Quick Voice & Image Actions inside textarea */}
@@ -505,7 +505,7 @@ export const TicketCommentsSection: React.FC<TicketCommentsSectionProps> = ({
             <button
               type="button"
               onClick={() => imageInputRef.current?.click()}
-              className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer"
+              className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-lg transition-colors cursor-pointer"
               title="Attach image to comment"
             >
               <ImageIcon className="w-3.5 h-3.5" />
@@ -518,7 +518,7 @@ export const TicketCommentsSection: React.FC<TicketCommentsSectionProps> = ({
               className={`p-1.5 rounded-lg transition-all cursor-pointer ${
                 isListening
                   ? 'bg-rose-500 text-white shadow-xs animate-pulse'
-                  : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                  : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
               title={isListening ? 'Stop transcribing' : 'Voice to transcribe text'}
             >

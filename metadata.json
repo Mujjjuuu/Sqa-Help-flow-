@@ -1,6 +1,6 @@
 {
-  "name": "Kanso Projects - Personal Ticket Workspace",
-  "description": "A lightweight personal workspace for managing projects and tickets with a Kanban board, search, attachments, and downloadable reports.",
+  "name": "KRUM - Precision Ticket & Attendance Workspace",
+  "description": "KRUM - A high-performance personal & team workspace for project boards, AI notes, attendance, and analytics.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

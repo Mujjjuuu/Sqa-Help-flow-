@@ -387,14 +387,14 @@ export const AttendancePage: React.FC = () => {
       )}
 
       {/* Top Header & Session Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 dark:border-slate-800 pb-5">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold text-slate-900 tracking-tight">
+            <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100 tracking-tight">
               Attendance & Workforce
             </h1>
             <span className="text-xs text-slate-400 font-normal">/</span>
-            <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium">
+            <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 font-medium">
               <span
                 className={`w-2 h-2 rounded-full ${
                   isSuperAdmin ? 'bg-purple-600' : isAdmin ? 'bg-indigo-600' : 'bg-slate-400'
@@ -403,19 +403,19 @@ export const AttendancePage: React.FC = () => {
               <span>{formatRoleName(currentUser.role || 'employee')}</span>
             </div>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Track daily work shifts, inspect team attendance reports, and manage access permissions.
           </p>
         </div>
 
         {/* User Identity Switcher (Quick Persona Switch for Testing) */}
         <div className="flex items-center gap-3 shrink-0">
-          <div className="flex items-center gap-2.5 bg-white border border-slate-200/90 rounded-lg p-1.5 pl-3 shadow-2xs">
+          <div className="flex items-center gap-2.5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-lg p-1.5 pl-3 shadow-2xs">
             <div className="text-right">
-              <span className="text-xs font-semibold text-slate-900 block leading-tight">
+              <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 block leading-tight">
                 {currentUser.name}
               </span>
-              <span className="text-[10px] text-slate-400 font-medium block">
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium block">
                 {currentUser.department || 'Engineering'}
               </span>
             </div>
@@ -423,7 +423,7 @@ export const AttendancePage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsPersonaModalOpen(true)}
-              className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors cursor-pointer"
+              className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition-colors cursor-pointer"
               title="Switch user role persona to test access levels"
             >
               <span>Switch User</span>
@@ -435,14 +435,14 @@ export const AttendancePage: React.FC = () => {
 
       {/* Segmented Tab Navigation */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="inline-flex p-1 bg-slate-100 rounded-lg border border-slate-200/60">
+        <div className="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200/60 dark:border-slate-700">
           <button
             type="button"
             onClick={() => setActiveTab('my_attendance')}
             className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
               activeTab === 'my_attendance'
-                ? 'bg-white text-slate-900 shadow-xs font-semibold'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-semibold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Clock className="w-3.5 h-3.5 text-slate-500" />
@@ -454,8 +454,8 @@ export const AttendancePage: React.FC = () => {
             onClick={() => setActiveTab('reports')}
             className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
               activeTab === 'reports'
-                ? 'bg-white text-slate-900 shadow-xs font-semibold'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-semibold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Users className="w-3.5 h-3.5 text-slate-500" />
@@ -468,8 +468,8 @@ export const AttendancePage: React.FC = () => {
             onClick={() => setActiveTab('roles')}
             className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
               activeTab === 'roles'
-                ? 'bg-white text-slate-900 shadow-xs font-semibold'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-semibold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />

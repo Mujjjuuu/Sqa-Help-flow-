@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -7,17 +9,75 @@
     background-color: #f8fafc;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .dark body {
+    color: #f1f5f9;
+    background-color: #090d16;
   }
   
   code, pre, .font-mono {
     font-family: 'JetBrains Mono', monospace;
   }
+
+  /* Smooth scroll */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Text Selection styling */
+  ::selection {
+    background-color: #4f46e5;
+    color: #ffffff;
+  }
+
+  .dark ::selection {
+    background-color: #6366f1;
+    color: #ffffff;
+  }
 }
 
-/* Custom subtle scrollbar */
+/* Custom KRUM aerodynamic arrow cursor styles */
+@media (pointer: fine) {
+  html.krum-custom-cursor-active,
+  html.krum-custom-cursor-active * {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M3 2L10.5 21L13.8 13.8L21 10.5L3 2Z' fill='%230f172a' stroke='%23ffffff' stroke-width='1.5' stroke-linejoin='round'/%3E%3Ccircle cx='11.5' cy='11.5' r='1.5' fill='%236366f1'/%3E%3C/svg%3E") 3 2, auto !important;
+  }
+
+  html.krum-custom-cursor-active a,
+  html.krum-custom-cursor-active button,
+  html.krum-custom-cursor-active input,
+  html.krum-custom-cursor-active select,
+  html.krum-custom-cursor-active textarea,
+  html.krum-custom-cursor-active [role="button"],
+  html.krum-custom-cursor-active [role="link"],
+  html.krum-custom-cursor-active .cursor-pointer {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M3 2L10.5 21L13.8 13.8L21 10.5L3 2Z' fill='%234f46e5' stroke='%23ffffff' stroke-width='1.5' stroke-linejoin='round'/%3E%3Ccircle cx='11.5' cy='11.5' r='1.5' fill='%2338bdf8'/%3E%3C/svg%3E") 3 2, pointer !important;
+  }
+
+  /* In dark mode, crisp high-contrast light stroke custom arrow */
+  html.dark.krum-custom-cursor-active,
+  html.dark.krum-custom-cursor-active * {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M3 2L10.5 21L13.8 13.8L21 10.5L3 2Z' fill='%23f8fafc' stroke='%23090d16' stroke-width='1.5' stroke-linejoin='round'/%3E%3Ccircle cx='11.5' cy='11.5' r='1.5' fill='%23818cf8'/%3E%3C/svg%3E") 3 2, auto !important;
+  }
+
+  html.dark.krum-custom-cursor-active a,
+  html.dark.krum-custom-cursor-active button,
+  html.dark.krum-custom-cursor-active input,
+  html.dark.krum-custom-cursor-active select,
+  html.dark.krum-custom-cursor-active textarea,
+  html.dark.krum-custom-cursor-active [role="button"],
+  html.dark.krum-custom-cursor-active [role="link"],
+  html.dark.krum-custom-cursor-active .cursor-pointer {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M3 2L10.5 21L13.8 13.8L21 10.5L3 2Z' fill='%23818cf8' stroke='%23ffffff' stroke-width='1.5' stroke-linejoin='round'/%3E%3Ccircle cx='11.5' cy='11.5' r='1.5' fill='%2338bdf8'/%3E%3C/svg%3E") 3 2, pointer !important;
+  }
+}
+
+/* Custom subtle high-contrast scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -25,7 +85,23 @@
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }

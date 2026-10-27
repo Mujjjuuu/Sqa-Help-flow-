@@ -124,10 +124,10 @@ export const LoginPage: React.FC = () => {
               </div>
               <div>
                 <span className="font-bold text-base tracking-tight text-white block leading-none">
-                  Kanso Workspaces
+                  KRUM Workspace
                 </span>
-                <span className="text-[11px] text-slate-400 font-mono tracking-wider uppercase block mt-1">
-                  Personal Ticket Platform
+                <span className="text-[11px] text-indigo-400 font-mono tracking-wider uppercase block mt-1">
+                  Precision Command Platform
                 </span>
               </div>
             </div>

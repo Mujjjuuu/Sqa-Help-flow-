@@ -80,7 +80,7 @@ export const GeminiChatBot: React.FC = () => {
     {
       id: 'welcome-001',
       role: 'model',
-      text: "👋 Hi, I'm your **Kanso Gemini Assistant**. I can help you plan features, draft ticket descriptions, write separate technical notes, or audit your 4-stage pipeline (Just Written → Under Review → Verified → Verified by QA). How can I help you today?",
+      text: "👋 Hi, I'm your **KRUM AI Assistant**. I can help you plan features, draft ticket descriptions, write separate technical notes, or audit your 4-stage pipeline (Just Written → Under Review → Verified → Verified by QA). How can I help you today?",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       modelUsed: 'gemini-3.5-flash',
     },
@@ -246,7 +246,7 @@ export const GeminiChatBot: React.FC = () => {
               <div>
                 <div className="flex items-center gap-1.5">
                   <h3 className="font-bold text-xs tracking-tight text-white leading-none">
-                    Kanso Assistant
+                    KRUM Assistant
                   </h3>
                   <span className="text-[9px] font-mono bg-indigo-950 text-indigo-300 border border-indigo-800/60 px-1 py-0.2 rounded">
                     {activeRoleOption.model.replace('gemini-', '')}

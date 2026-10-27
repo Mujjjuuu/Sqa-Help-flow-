@@ -26,19 +26,19 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variants = {
     primary:
-      'bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800 shadow-xs shadow-indigo-500/25 border border-indigo-600 hover:border-indigo-700 font-semibold',
+      'bg-indigo-600 dark:bg-indigo-600 text-white hover:bg-indigo-700 dark:hover:bg-indigo-500 active:bg-indigo-800 shadow-xs shadow-indigo-500/25 border border-indigo-600 dark:border-indigo-500 font-semibold',
     indigo:
-      'bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800 shadow-xs shadow-indigo-500/25 border border-indigo-600 hover:border-indigo-700 font-semibold',
+      'bg-indigo-600 dark:bg-indigo-600 text-white hover:bg-indigo-700 dark:hover:bg-indigo-500 active:bg-indigo-800 shadow-xs shadow-indigo-500/25 border border-indigo-600 dark:border-indigo-500 font-semibold',
     secondary:
-      'bg-slate-100 text-slate-800 hover:bg-slate-200 active:bg-slate-300 border border-slate-200/80 font-medium',
+      'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 active:bg-slate-300 dark:active:bg-slate-600 border border-slate-200/80 dark:border-slate-700 font-medium',
     outline:
-      'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 active:bg-slate-100 shadow-2xs font-medium',
+      'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-600 active:bg-slate-100 dark:active:bg-slate-700 shadow-2xs font-medium',
     ai:
-      'bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100/90 hover:border-indigo-300 active:bg-indigo-150 shadow-2xs font-semibold',
+      'bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100/90 dark:hover:bg-indigo-900/60 hover:border-indigo-300 dark:hover:border-indigo-700 active:bg-indigo-150 shadow-2xs font-semibold',
     danger:
       'bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 shadow-xs shadow-rose-500/20 border border-rose-600 font-medium',
     ghost:
-      'text-slate-600 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200/70 border border-transparent font-medium',
+      'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 active:bg-slate-200/70 dark:active:bg-slate-700 border border-transparent font-medium',
   };
 
   const sizes = {

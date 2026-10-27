@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { FirebaseProvider } from './context/FirebaseContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { CustomCursor } from './components/CustomCursor';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Layout } from './components/Layout';
 import { DashboardPage } from './pages/DashboardPage';
@@ -28,38 +30,41 @@ const queryClient = new QueryClient({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <FirebaseProvider>
-        <AuthProvider>
-          <BrowserRouter>
-            <Routes>
-              {/* Public Authentication Routes */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/auth" element={<LoginPage />} />
+      <ThemeProvider>
+        <CustomCursor />
+        <FirebaseProvider>
+          <AuthProvider>
+            <BrowserRouter>
+              <Routes>
+                {/* Public Authentication Routes */}
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/auth" element={<LoginPage />} />
 
-              {/* Protected Workspace Routes (Directed to / after login) */}
-              <Route
-                element={
-                  <ProtectedRoute>
-                    <Layout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route path="/" element={<DashboardPage />} />
-                <Route path="/projects" element={<ProjectsPage />} />
-                <Route path="/projects/:projectId" element={<ProjectBoardPage />} />
-                <Route path="/tickets" element={<AllTicketsPage />} />
-                <Route path="/attendance" element={<AttendancePage />} />
-                <Route path="/notes" element={<NotesPage />} />
-                <Route path="/files" element={<FilesPage />} />
-                <Route path="/reports" element={<ReportsPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-              </Route>
+                {/* Protected Workspace Routes (Directed to / after login) */}
+                <Route
+                  element={
+                    <ProtectedRoute>
+                      <Layout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route path="/" element={<DashboardPage />} />
+                  <Route path="/projects" element={<ProjectsPage />} />
+                  <Route path="/projects/:projectId" element={<ProjectBoardPage />} />
+                  <Route path="/tickets" element={<AllTicketsPage />} />
+                  <Route path="/attendance" element={<AttendancePage />} />
+                  <Route path="/notes" element={<NotesPage />} />
+                  <Route path="/files" element={<FilesPage />} />
+                  <Route path="/reports" element={<ReportsPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                </Route>
 
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </BrowserRouter>
-        </AuthProvider>
-      </FirebaseProvider>
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </BrowserRouter>
+          </AuthProvider>
+        </FirebaseProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

@@ -292,18 +292,18 @@ export const ProjectBoardPage: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* Board Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-3">
           {/* Project Switcher */}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500 font-medium hidden sm:inline">Project:</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium hidden sm:inline">Project:</span>
             <select
               value={currentProject?.id || ''}
               onChange={(e) => navigate(`/projects/${e.target.value}`)}
-              className="font-bold text-sm sm:text-base text-slate-900 bg-transparent border-0 focus:outline-none focus:ring-0 cursor-pointer pr-6 py-0.5"
+              className="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 bg-transparent border-0 focus:outline-none focus:ring-0 cursor-pointer pr-6 py-0.5"
             >
               {allProjects.map((p) => (
-                <option key={p.id} value={p.id}>
+                <option key={p.id} value={p.id} className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">
                   {p.name}
                 </option>
               ))}
@@ -311,11 +311,11 @@ export const ProjectBoardPage: React.FC = () => {
           </div>
 
           {stats && (
-            <div className="hidden md:flex items-center gap-2 pl-3 border-l border-slate-200 text-xs">
-              <span className="text-slate-500">
-                <strong className="text-slate-900 font-semibold">{stats.totalTickets}</strong> Tickets
+            <div className="hidden md:flex items-center gap-2 pl-3 border-l border-slate-200 dark:border-slate-800 text-xs">
+              <span className="text-slate-500 dark:text-slate-400">
+                <strong className="text-slate-900 dark:text-slate-100 font-semibold">{stats.totalTickets}</strong> Tickets
               </span>
-              <span className="text-purple-600 font-medium">
+              <span className="text-purple-600 dark:text-purple-400 font-medium">
                 • {stats.uploadedTickets} Verified by QA ({stats.completionPercentage}%)
               </span>
             </div>
@@ -325,14 +325,14 @@ export const ProjectBoardPage: React.FC = () => {
         {/* View Switcher & Action Buttons */}
         <div className="flex items-center gap-2 flex-wrap">
           {/* Tab Switcher (Board vs Overview) */}
-          <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs">
+          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
             <button
               type="button"
               onClick={() => setActiveTab('board')}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-medium transition-colors cursor-pointer ${
                 activeTab === 'board'
-                  ? 'bg-white text-slate-900 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs font-semibold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
               <Columns className="w-3.5 h-3.5" />
@@ -343,8 +343,8 @@ export const ProjectBoardPage: React.FC = () => {
               onClick={() => setActiveTab('overview')}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-medium transition-colors cursor-pointer ${
                 activeTab === 'overview'
-                  ? 'bg-white text-slate-900 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs font-semibold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
               <BarChart2 className="w-3.5 h-3.5" />
@@ -370,10 +370,10 @@ export const ProjectBoardPage: React.FC = () => {
 
             {isExportMenuOpen && (
               <div
-                className="absolute right-0 top-full mt-1.5 w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-30 py-1 text-xs divide-y divide-slate-100"
+                className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg z-30 py-1 text-xs divide-y divide-slate-100 dark:divide-slate-800"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                   Export Board Tickets ({filteredTickets.length})
                 </div>
                 <div className="py-1">
@@ -386,7 +386,7 @@ export const ProjectBoardPage: React.FC = () => {
                         currentProject?.name || 'Project Tickets'
                       );
                     }}
-                    className="w-full text-left px-3 py-1.5 hover:bg-slate-50 text-slate-700 flex items-center gap-2 cursor-pointer"
+                    className="w-full text-left px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-2 cursor-pointer"
                   >
                     <FileText className="w-3.5 h-3.5 text-rose-500" />
                     <span>Export as PDF</span>
@@ -400,7 +400,7 @@ export const ProjectBoardPage: React.FC = () => {
                         currentProject?.name || 'Project Tickets'
                       );
                     }}
-                    className="w-full text-left px-3 py-1.5 hover:bg-slate-50 text-slate-700 flex items-center gap-2 cursor-pointer"
+                    className="w-full text-left px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-2 cursor-pointer"
                   >
                     <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
                     <span>Export as Excel (.xlsx)</span>
@@ -414,7 +414,7 @@ export const ProjectBoardPage: React.FC = () => {
                         currentProject?.name || 'project_tickets'
                       );
                     }}
-                    className="w-full text-left px-3 py-1.5 hover:bg-slate-50 text-slate-700 flex items-center gap-2 cursor-pointer"
+                    className="w-full text-left px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-2 cursor-pointer"
                   >
                     <FileCode className="w-3.5 h-3.5 text-sky-600" />
                     <span>Export as CSV</span>
@@ -466,16 +466,16 @@ export const ProjectBoardPage: React.FC = () => {
 
       {/* Filter Toolbar (Board Mode) */}
       {activeTab === 'board' && (
-        <div className="flex items-center justify-between gap-3 flex-wrap bg-white p-2.5 rounded-xl border border-slate-200/80">
+        <div className="flex items-center justify-between gap-3 flex-wrap bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800">
           <div className="flex items-center gap-2 flex-1 max-w-sm">
             <div className="relative w-full">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Filter by ID, title, notes..."
-                className="w-full text-xs pl-8 pr-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900"
+                className="w-full text-xs pl-8 pr-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
             </div>
           </div>
@@ -485,11 +485,11 @@ export const ProjectBoardPage: React.FC = () => {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-900 cursor-pointer"
+              className="text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
             >
-              <option value="">All Categories</option>
+              <option value="" className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">All Categories</option>
               {categories.map((c) => (
-                <option key={c.id} value={c.id}>
+                <option key={c.id} value={c.id} className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">
                   {c.name}
                 </option>
               ))}
@@ -499,14 +499,14 @@ export const ProjectBoardPage: React.FC = () => {
             <select
               value={selectedPriority}
               onChange={(e) => setSelectedPriority(e.target.value)}
-              className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-900 cursor-pointer"
+              className="text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
             >
-              <option value="">All Priorities</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="critical">Critical</option>
-              <option value="urgent">Critical (Urgent)</option>
+              <option value="" className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">All Priorities</option>
+              <option value="low" className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">Low</option>
+              <option value="medium" className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">Medium</option>
+              <option value="high" className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">High</option>
+              <option value="critical" className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">Critical</option>
+              <option value="urgent" className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">Critical (Urgent)</option>
             </select>
 
             {hasActiveFilters && (
@@ -514,7 +514,7 @@ export const ProjectBoardPage: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 onClick={clearFilters}
-                className="text-xs px-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                className="text-xs px-2 text-rose-600 dark:text-rose-400 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40"
               >
                 <X className="w-3 h-3 mr-1" />
                 Clear
