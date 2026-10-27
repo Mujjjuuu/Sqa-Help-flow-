@@ -163,17 +163,39 @@ export const ticketService = {
     const ticketNumber = await this.generateTicketNumber(formData.project_id);
     const now = new Date().toISOString();
 
+    const currentUser = localDB.getCurrentUser();
+    const authorName = currentUser?.name || 'Project Owner';
+    const authorAvatar = currentUser?.avatar_url || '';
+
     const newTicket: Ticket = {
       id: `tkt-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       project_id: formData.project_id,
       ticket_number: ticketNumber,
+      ref_code: formData.ref_code || '',
+      ticket_type: formData.ticket_type || 'Modification',
       title: formData.title.trim(),
       description: formData.description?.trim() || '',
       notes: formData.notes?.trim() || '',
       category_id: formData.category_id,
       status_id: formData.status_id,
       priority: formData.priority,
+      severity: formData.severity || 'medium',
+      dev_mask: formData.dev_mask || 'frontend',
+      color: formData.color || 'default',
+      work_assignments: formData.work_assignments || {
+        backend: '',
+        frontend: authorName,
+        flutter: '',
+        qa: '',
+      },
+      work_relay: formData.work_relay,
+      time_tracking: formData.time_tracking,
+      start_date: formData.start_date || null,
       due_date: formData.due_date || null,
+      created_by_name: authorName,
+      created_by_avatar: authorAvatar,
+      updated_by_name: authorName,
+      updated_by_avatar: authorAvatar,
       created_at: now,
       updated_at: now,
     };
@@ -214,12 +236,13 @@ export const ticketService = {
       created = localDB.saveTicket(newTicket);
     }
 
-    // Record creation history
+    // Record creation history with author
     await historyService.recordHistory(
       created.id,
       'created',
       null,
-      `Created ticket ${created.ticket_number}: ${created.title}`
+      `Created ticket ${created.ticket_number}: ${created.title}`,
+      { name: authorName, avatar: authorAvatar, id: currentUser?.id }
     );
 
     // Upload any initial files attached
@@ -250,28 +273,43 @@ export const ticketService = {
     const existing = await this.getTicketById(ticketId);
     if (!existing) throw new Error('Ticket not found');
 
+    const currentUser = localDB.getCurrentUser();
+    const authorName = currentUser?.name || 'Project Member';
+    const authorAvatar = currentUser?.avatar_url || '';
+    const userPayload = { name: authorName, avatar: authorAvatar, id: currentUser?.id };
+
     const statuses = await statusService.getStatuses(existing.project_id);
 
     // Track status change
     if (updates.status_id && updates.status_id !== existing.status_id) {
       const oldStatus = statuses.find((s) => s.id === existing.status_id)?.name || 'Unknown';
       const newStatus = statuses.find((s) => s.id === updates.status_id)?.name || 'Unknown';
-      await historyService.recordHistory(ticketId, 'status_changed', oldStatus, newStatus);
+      await historyService.recordHistory(ticketId, 'status_changed', oldStatus, newStatus, userPayload);
     }
 
     // Track priority change
     if (updates.priority && updates.priority !== existing.priority) {
-      await historyService.recordHistory(ticketId, 'priority_changed', existing.priority, updates.priority);
+      await historyService.recordHistory(ticketId, 'priority_changed', existing.priority, updates.priority, userPayload);
     }
 
     // Track title change
     if (updates.title && updates.title !== existing.title) {
-      await historyService.recordHistory(ticketId, 'title_changed', existing.title, updates.title);
+      await historyService.recordHistory(ticketId, 'title_changed', existing.title, updates.title, userPayload);
+    }
+
+    // Track description change
+    if (updates.description !== undefined && updates.description !== existing.description) {
+      await historyService.recordHistory(ticketId, 'description_changed', 'Previous description', 'Updated description', userPayload);
     }
 
     // Track notes change
     if (updates.notes !== undefined && updates.notes !== existing.notes) {
-      await historyService.recordHistory(ticketId, 'notes_updated', 'Previous notes', 'Updated notes');
+      await historyService.recordHistory(ticketId, 'notes_updated', 'Previous notes', 'Updated notes', userPayload);
+    }
+
+    // Track category change
+    if (updates.category_id && updates.category_id !== existing.category_id) {
+      await historyService.recordHistory(ticketId, 'category_changed', 'Previous category', 'Updated category', userPayload);
     }
 
     // Track due date change
@@ -280,13 +318,16 @@ export const ticketService = {
         ticketId,
         'due_date_changed',
         existing.due_date || 'No due date',
-        updates.due_date || 'No due date'
+        updates.due_date || 'No due date',
+        userPayload
       );
     }
 
     const updatedData: Ticket = {
       ...existing,
       ...updates,
+      updated_by_name: authorName,
+      updated_by_avatar: authorAvatar,
       updated_at: new Date().toISOString(),
     };
 
@@ -331,19 +372,35 @@ export const ticketService = {
     if (!existing) throw new Error('Ticket not found');
     if (existing.status_id === newStatusId) return existing;
 
+    const currentUser = localDB.getCurrentUser();
+    const authorName = currentUser?.name || 'Project Member';
+    const authorAvatar = currentUser?.avatar_url || '';
+
     const statuses = await statusService.getStatuses(existing.project_id);
     const oldStatus = statuses.find((s) => s.id === existing.status_id)?.name || 'Previous Status';
     const newStatus = statuses.find((s) => s.id === newStatusId)?.name || 'New Status';
 
-    // Record status movement in history
-    await historyService.recordHistory(ticketId, 'status_changed', oldStatus, newStatus);
+    // Record status movement in history with author
+    await historyService.recordHistory(
+      ticketId,
+      'status_changed',
+      oldStatus,
+      newStatus,
+      { name: authorName, avatar: authorAvatar, id: currentUser?.id }
+    );
 
     const now = new Date().toISOString();
     const updatedTicket: Ticket = {
       ...existing,
       status_id: newStatusId,
+      status: statuses.find((s) => s.id === newStatusId),
+      updated_by_name: authorName,
+      updated_by_avatar: authorAvatar,
       updated_at: now,
     };
+
+    // Save immediately to local persistent store so ticket stays in its new column
+    localDB.saveTicket(updatedTicket);
 
     try {
       await firestoreService.saveTicket(updatedTicket);
@@ -362,8 +419,7 @@ export const ticketService = {
         .eq('id', ticketId);
     }
 
-    localDB.saveTicket(updatedTicket);
-    return (await this.getTicketById(ticketId)) || updatedTicket;
+    return updatedTicket;
   },
 
   /**

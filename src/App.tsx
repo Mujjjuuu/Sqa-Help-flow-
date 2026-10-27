@@ -11,6 +11,8 @@ import { ProjectBoardPage } from './pages/ProjectBoardPage';
 import { AllTicketsPage } from './pages/AllTicketsPage';
 import { FilesPage } from './pages/FilesPage';
 import { ReportsPage } from './pages/ReportsPage';
+import { AttendancePage } from './pages/AttendancePage';
+import { NotesPage } from './pages/NotesPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { LoginPage } from './pages/LoginPage';
 
@@ -46,6 +48,8 @@ export default function App() {
                 <Route path="/projects" element={<ProjectsPage />} />
                 <Route path="/projects/:projectId" element={<ProjectBoardPage />} />
                 <Route path="/tickets" element={<AllTicketsPage />} />
+                <Route path="/attendance" element={<AttendancePage />} />
+                <Route path="/notes" element={<NotesPage />} />
                 <Route path="/files" element={<FilesPage />} />
                 <Route path="/reports" element={<ReportsPage />} />
                 <Route path="/settings" element={<SettingsPage />} />

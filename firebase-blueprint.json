@@ -259,12 +259,106 @@
         }
       },
       "required": ["ticket_id", "action_type", "created_at"]
+    },
+    "Attendance": {
+      "title": "Attendance",
+      "description": "Daily employee attendance punch records with RBAC role scoping",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique attendance record ID"
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Employee UID"
+        },
+        "user_name": {
+          "type": "string",
+          "description": "Employee full name",
+          "maxLength": 100
+        },
+        "user_email": {
+          "type": "string",
+          "description": "Employee email address"
+        },
+        "user_role": {
+          "type": "string",
+          "description": "Assigned role",
+          "enum": ["super_admin", "admin", "employee"]
+        },
+        "department": {
+          "type": "string",
+          "description": "Department name"
+        },
+        "date": {
+          "type": "string",
+          "description": "ISO date YYYY-MM-DD"
+        },
+        "check_in": {
+          "type": "string",
+          "description": "Clock in ISO timestamp"
+        },
+        "check_out": {
+          "type": "string",
+          "description": "Clock out ISO timestamp"
+        },
+        "work_duration_minutes": {
+          "type": "number",
+          "description": "Total duration in minutes"
+        },
+        "status": {
+          "type": "string",
+          "description": "Attendance status",
+          "enum": ["present", "late", "half_day", "absent", "on_leave"]
+        },
+        "shift_start": {
+          "type": "string",
+          "description": "Scheduled shift start time"
+        },
+        "shift_end": {
+          "type": "string",
+          "description": "Scheduled shift end time"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Punch notes or remarks",
+          "maxLength": 500
+        },
+        "regularization_requested": {
+          "type": "boolean",
+          "description": "Whether regularization was requested"
+        },
+        "regularization_reason": {
+          "type": "string",
+          "description": "Reason given for regularization",
+          "maxLength": 500
+        },
+        "regularization_status": {
+          "type": "string",
+          "description": "Status of the regularization review",
+          "enum": ["pending", "approved", "rejected"]
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Creation timestamp"
+        },
+        "updated_at": {
+          "type": "string",
+          "description": "Update timestamp"
+        }
+      },
+      "required": ["user_id", "user_name", "user_email", "user_role", "date", "status", "created_at", "updated_at"]
     }
   },
   "firestore": {
     "/users/{userId}": {
       "schema": "User",
       "description": "User profile collection"
+    },
+    "/attendance/{recordId}": {
+      "schema": "Attendance",
+      "description": "Workforce attendance registry and daily logs"
     },
     "/projects/{projectId}": {
       "schema": "Project",

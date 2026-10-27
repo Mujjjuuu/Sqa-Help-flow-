@@ -177,6 +177,7 @@ export const projectService = {
       'Just Written': '#64748b',
       'Under Review': '#d97706',
       'Verified': '#0284c7',
+      'Verified by QA': '#7c3aed',
       'Uploaded': '#7c3aed',
       'In Progress': '#0284c7',
       'Changes Required': '#ea580c',

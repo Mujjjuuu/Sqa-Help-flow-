@@ -24,10 +24,12 @@ import { ReportPreview } from '../features/reports/ReportPreview';
 import { projectService } from '../features/projects/projectService';
 import { ticketService } from '../features/tickets/ticketService';
 import { reportService } from '../features/reports/reportService';
-import { Project, Ticket, ProjectReportData } from '../types';
+import { Project, Ticket, ProjectReportData, AttendanceRecord } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { STATUS_COLORS } from '../config/ticketStatuses';
 import { PRIORITY_CONFIG } from '../config/ticketCategories';
+import { attendanceService } from '../services/attendanceService';
+import { localDB } from '../services/localStore';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -36,6 +38,8 @@ export const DashboardPage: React.FC = () => {
   const [allTickets, setAllTickets] = useState<Ticket[]>([]);
   const [projectStatsMap, setProjectStatsMap] = useState<Record<string, { total: number; uploaded: number; progress: number }>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [todayAttendance, setTodayAttendance] = useState<AttendanceRecord | null>(null);
+  const [todaySummary, setTodaySummary] = useState<{ clockedIn: number; lateArrivals: number; totalEmployees: number } | null>(null);
 
   // Modals
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
@@ -44,10 +48,18 @@ export const DashboardPage: React.FC = () => {
   const loadDashboardData = async () => {
     setIsLoading(true);
     try {
+      const activeUser = user || localDB.getCurrentUser();
       const projs = await projectService.getProjects();
       const tickets = await ticketService.getTickets();
       setProjects(projs);
       setAllTickets(tickets);
+
+      if (activeUser) {
+        const att = await attendanceService.getTodayRecord(activeUser.id);
+        setTodayAttendance(att);
+      }
+      const summary = await attendanceService.getTodaySummary();
+      setTodaySummary(summary);
 
       const stats: Record<string, { total: number; uploaded: number; progress: number }> = {};
       for (const p of projs) {
@@ -69,7 +81,7 @@ export const DashboardPage: React.FC = () => {
 
   useEffect(() => {
     loadDashboardData();
-  }, []);
+  }, [user?.id]);
 
   const totalProjects = projects.length;
   const totalTickets = allTickets.length;
@@ -128,6 +140,68 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Attendance Quick Punch & Status Widget */}
+      <div className="bg-white border border-slate-200/90 rounded-xl p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
+            <Clock className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-slate-900">
+                Shift & Attendance
+              </span>
+              <span className="text-slate-300">·</span>
+              <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium">
+                {todayAttendance?.check_in ? (
+                  todayAttendance.check_out ? (
+                    <>
+                      <span className="w-2 h-2 rounded-full bg-slate-400" />
+                      <span>Shift Completed</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-emerald-700 font-medium">Clocked In</span>
+                    </>
+                  )
+                ) : (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-amber-500" />
+                    <span className="text-amber-700 font-medium">Not Clocked In</span>
+                  </>
+                )}
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {todayAttendance?.check_in
+                ? `Punched in at ${new Date(todayAttendance.check_in).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}`
+                : 'Standard shift: 09:00 — 18:00 (15 min grace window).'}
+              {todaySummary && (
+                <span className="text-slate-400 ml-2 hidden md:inline">
+                  — Workforce: {todaySummary.clockedIn}/{todaySummary.totalEmployees} clocked in today.
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 self-end sm:self-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/attendance')}
+            rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+            className="text-xs text-slate-700 border-slate-200 hover:bg-slate-50"
+          >
+            Attendance Portal
+          </Button>
+        </div>
+      </div>
+
       {/* Metric Cards (Total Projects, Total Tickets, Active Tickets, Uploaded Tickets) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-5 bg-white border border-slate-200/80 hover:border-slate-300 transition-all shadow-2xs">
@@ -171,7 +245,7 @@ export const DashboardPage: React.FC = () => {
 
         <Card className="p-5 bg-white border border-slate-200/80 hover:border-slate-300 transition-all shadow-2xs">
           <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-semibold text-slate-600">Uploaded / Final</span>
+            <span className="text-xs font-semibold text-slate-600">Verified by QA</span>
             <div className="p-2 rounded-xl bg-purple-50 text-purple-600">
               <Upload className="w-4 h-4" />
             </div>
@@ -198,13 +272,13 @@ export const DashboardPage: React.FC = () => {
 
             {projects.length > 0 && (
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => navigate('/projects')}
-                className="text-xs text-slate-600 hover:text-slate-900"
+                rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+                className="text-xs text-slate-700 hover:text-slate-900"
               >
-                <span>View All</span>
-                <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                View All
               </Button>
             )}
           </div>
@@ -328,7 +402,7 @@ export const DashboardPage: React.FC = () => {
                 <span className="text-[11px] text-slate-400">Quality checked</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="font-medium text-purple-700">4. Uploaded</span>
+                <span className="font-medium text-purple-700">4. Verified by QA</span>
                 <span className="text-[11px] text-slate-400">Final release</span>
               </div>
             </div>

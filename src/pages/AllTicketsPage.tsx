@@ -12,6 +12,9 @@ import {
   Eye,
   Edit2,
   ChevronDown,
+  Plus,
+  Sparkles,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
@@ -21,6 +24,8 @@ import { TableSkeleton } from '../components/Skeleton';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { TicketDetails } from '../features/tickets/TicketDetails';
 import { TicketForm } from '../features/tickets/TicketForm';
+import { GenerateTicketFromImageModal } from '../features/tickets/GenerateTicketFromImageModal';
+import { TicketFormData } from '../features/tickets/ticketTypes';
 import { ticketService } from '../features/tickets/ticketService';
 import { projectService } from '../features/projects/projectService';
 import { statusService } from '../services/statusService';
@@ -56,6 +61,9 @@ export const AllTicketsPage: React.FC = () => {
   const [activeTicketForDetails, setActiveTicketForDetails] = useState<Ticket | null>(null);
   const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
   const [isTicketFormOpen, setIsTicketFormOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [draftFromImage, setDraftFromImage] = useState<TicketFormData | null>(null);
+  const [draftFiles, setDraftFiles] = useState<File[]>([]);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
 
   const loadData = async () => {
@@ -73,8 +81,22 @@ export const AllTicketsPage: React.FC = () => {
           statusService.getStatuses(allProjs[0].id),
           categoryService.getCategories(allProjs[0].id),
         ]);
-        setStatuses(stList);
-        setCategories(catList);
+        const seenStIds = new Set<string>();
+        const uniqueSt = (stList || []).filter((s) => {
+          if (!s || !s.id || seenStIds.has(s.id)) return false;
+          seenStIds.add(s.id);
+          return true;
+        });
+
+        const seenCatIds = new Set<string>();
+        const uniqueCats = (catList || []).filter((c) => {
+          if (!c || !c.id || seenCatIds.has(c.id)) return false;
+          seenCatIds.add(c.id);
+          return true;
+        });
+
+        setStatuses(uniqueSt);
+        setCategories(uniqueCats);
       }
     } catch (e) {
       console.error('Failed to load tickets list:', e);
@@ -263,6 +285,31 @@ export const AllTicketsPage: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* AI Image to Ticket Generator */}
+          <Button
+            variant="ai"
+            size="sm"
+            onClick={() => setIsImageModalOpen(true)}
+            leftIcon={<Sparkles className="w-3.5 h-3.5 text-indigo-600" />}
+          >
+            Image to Ticket
+          </Button>
+
+          {/* Create Ticket */}
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => {
+              setEditingTicket(null);
+              setDraftFromImage(null);
+              setDraftFiles([]);
+              setIsTicketFormOpen(true);
+            }}
+            leftIcon={<Plus className="w-3.5 h-3.5" />}
+          >
+            New Ticket
+          </Button>
         </div>
       </div>
 
@@ -318,11 +365,13 @@ export const AllTicketsPage: React.FC = () => {
             className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-900"
           >
             <option value="">All Statuses</option>
-            {statuses.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
+            {statuses
+              .filter((s, idx, arr) => arr.findIndex((x) => x.id === s.id) === idx)
+              .map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
           </select>
 
           {/* Category Filter */}
@@ -332,11 +381,13 @@ export const AllTicketsPage: React.FC = () => {
             className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-900"
           >
             <option value="">All Categories</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
+            {categories
+              .filter((c, idx, arr) => arr.findIndex((x) => x.id === c.id) === idx)
+              .map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
           </select>
 
           {/* Priority Filter */}
@@ -349,7 +400,8 @@ export const AllTicketsPage: React.FC = () => {
             <option value="low">Low</option>
             <option value="medium">Medium</option>
             <option value="high">High</option>
-            <option value="urgent">Urgent</option>
+            <option value="critical">Critical</option>
+            <option value="urgent">Critical (Urgent)</option>
           </select>
 
           {/* Date Range From */}
@@ -393,11 +445,13 @@ export const AllTicketsPage: React.FC = () => {
                 className="bg-slate-900 text-white text-xs border border-slate-700 rounded px-2 py-0.5"
               >
                 <option value="">Select Status</option>
-                {statuses.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
+                {statuses
+                  .filter((s, idx, arr) => arr.findIndex((x) => x.id === s.id) === idx)
+                  .map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
               </select>
               <Button
                 variant="secondary"
@@ -480,7 +534,7 @@ export const AllTicketsPage: React.FC = () => {
                   <th className="py-3 px-3">Category</th>
                   <th className="py-3 px-3">Status</th>
                   <th className="py-3 px-3">Priority</th>
-                  <th className="py-3 px-3">Created</th>
+                  <th className="py-3 px-3">Modified By</th>
                   <th className="py-3 px-3">Updated</th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
@@ -514,12 +568,37 @@ export const AllTicketsPage: React.FC = () => {
                       </td>
 
                       <td className="py-3 px-3 font-medium text-slate-900 max-w-sm">
-                        <div
-                          onClick={() => setActiveTicketForDetails(t)}
-                          className="cursor-pointer hover:underline truncate"
-                          title={t.title}
-                        >
-                          {t.title}
+                        <div className="flex items-center gap-2">
+                          {/* Mini Thumbnail or Image Icon if ticket has images */}
+                          {(() => {
+                            const firstImgAtt = t.attachments?.find(
+                              (a) =>
+                                a.file_type?.startsWith('image/') ||
+                                a.file_url?.startsWith('data:image/') ||
+                                /\.(png|jpe?g|webp|gif|svg)$/i.test(a.file_name)
+                            );
+                            const firstCommentImg = t.comments?.find((c) => c.images?.length)?.images?.[0];
+                            const previewSrc = firstImgAtt?.file_url || firstCommentImg;
+
+                            if (previewSrc) {
+                              return (
+                                <img
+                                  src={previewSrc}
+                                  alt="Thumbnail"
+                                  className="w-7 h-7 rounded-md object-cover border border-slate-200 shrink-0"
+                                />
+                              );
+                            }
+                            return null;
+                          })()}
+
+                          <div
+                            onClick={() => setActiveTicketForDetails(t)}
+                            className="cursor-pointer hover:underline truncate"
+                            title={t.title}
+                          >
+                            {t.title}
+                          </div>
                         </div>
                       </td>
 
@@ -554,12 +633,19 @@ export const AllTicketsPage: React.FC = () => {
                         </span>
                       </td>
 
-                      <td className="py-3 px-3 text-slate-500 text-[11px]">
-                        {new Date(t.created_at).toLocaleDateString()}
+                      <td className="py-3 px-3 text-slate-700 text-[11px]">
+                        <div className="flex items-center gap-1.5 truncate max-w-[120px]">
+                          <div className="w-4 h-4 rounded-full bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center font-bold text-[9px] shrink-0">
+                            {(t.updated_by_name || t.created_by_name || 'T').slice(0, 1).toUpperCase()}
+                          </div>
+                          <span className="truncate" title={`Modified by ${t.updated_by_name || t.created_by_name || 'Team'}`}>
+                            {t.updated_by_name || t.created_by_name || 'Team'}
+                          </span>
+                        </div>
                       </td>
 
-                      <td className="py-3 px-3 text-slate-500 text-[11px]">
-                        {new Date(t.updated_at).toLocaleDateString()}
+                      <td className="py-3 px-3 text-slate-500 text-[11px] font-mono">
+                        {new Date(t.updated_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                       </td>
 
                       <td className="py-3 px-4 text-right">
@@ -628,6 +714,8 @@ export const AllTicketsPage: React.FC = () => {
         onClose={() => {
           setIsTicketFormOpen(false);
           setEditingTicket(null);
+          setDraftFromImage(null);
+          setDraftFiles([]);
         }}
         onSubmit={async (formData) => {
           if (editingTicket) {
@@ -641,6 +729,28 @@ export const AllTicketsPage: React.FC = () => {
         statuses={statuses}
         categories={categories}
         initialData={editingTicket}
+        initialDraft={draftFromImage}
+        initialFiles={draftFiles}
+      />
+
+      {/* Generate Ticket from Image Modal */}
+      <GenerateTicketFromImageModal
+        isOpen={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        projects={projects}
+        statuses={statuses}
+        categories={categories}
+        currentProjectId={selectedProjectId || projects[0]?.id}
+        defaultStatusId={statuses[0]?.id}
+        onTicketCreated={async () => {
+          await loadData();
+        }}
+        onOpenFullFormWithDraft={(draft, imageFile) => {
+          setDraftFromImage(draft);
+          if (imageFile) setDraftFiles([imageFile]);
+          setEditingTicket(null);
+          setIsTicketFormOpen(true);
+        }}
       />
 
       {/* Bulk Delete Confirm Dialog */}

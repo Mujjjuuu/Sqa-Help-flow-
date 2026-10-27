@@ -12,7 +12,7 @@ export interface DefaultStatusConfig {
  * 1. Just Written
  * 2. Under Review
  * 3. Verified
- * 4. Uploaded (Final)
+ * 4. Verified by QA (Final)
  */
 export const DEFAULT_TICKET_STATUSES: DefaultStatusConfig[] = [
   {
@@ -40,7 +40,7 @@ export const DEFAULT_TICKET_STATUSES: DefaultStatusConfig[] = [
     badgeText: 'text-sky-700',
   },
   {
-    name: 'Uploaded',
+    name: 'Verified by QA',
     position: 3,
     is_final: true,
     color: '#7c3aed', // Purple / Violet (Final delivery)
@@ -53,6 +53,7 @@ export const STATUS_COLORS: Record<string, { bg: string; text: string; border: s
   'Just Written': { bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200' },
   'Under Review': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
   'Verified': { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200' },
+  'Verified by QA': { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
   'Uploaded': { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
   // Backward compatibility fallbacks
   'In Progress': { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200' },

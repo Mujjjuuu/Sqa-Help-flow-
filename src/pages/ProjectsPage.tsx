@@ -169,22 +169,26 @@ export const ProjectsPage: React.FC = () => {
                   onDownloadReport={handleDownloadReport}
                 />
                 {/* Secondary management buttons top right */}
-                <div className="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 px-1 py-0.5 rounded-lg border border-slate-200 shadow-2xs">
+                <div className="absolute top-4 right-4 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 backdrop-blur-xs px-1.5 py-1 rounded-xl border border-slate-200 shadow-sm">
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setEditingProject(project);
                       setIsFormOpen(true);
                     }}
-                    className="p-1 text-slate-400 hover:text-slate-700 rounded hover:bg-slate-100"
+                    className="p-1.5 text-slate-500 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
                     title="Edit project"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
                   </button>
                   <button
                     type="button"
-                    onClick={() => setProjectToDelete(project)}
-                    className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-slate-100"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setProjectToDelete(project);
+                    }}
+                    className="p-1.5 text-slate-500 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
                     title="Delete project"
                   >
                     <Trash2 className="w-3.5 h-3.5" />

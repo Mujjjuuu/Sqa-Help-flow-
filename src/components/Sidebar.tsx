@@ -12,6 +12,11 @@ import {
   Plus,
   LogOut,
   LogIn,
+  Clock,
+  Crown,
+  ShieldCheck,
+  Briefcase,
+  StickyNote,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -41,6 +46,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { to: '/', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/projects', label: 'Projects', icon: FolderKanban },
     { to: '/tickets', label: 'All Tickets', icon: CheckSquare },
+    { to: '/notes', label: 'Notes', icon: StickyNote },
+    { to: '/attendance', label: 'Attendance', icon: Clock },
     { to: '/files', label: 'Files', icon: Paperclip },
     { to: '/reports', label: 'Reports', icon: FileSpreadsheet },
     { to: '/settings', label: 'Settings', icon: Settings },
@@ -141,9 +148,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
               )}
               {!isCollapsed && (
                 <div className="truncate leading-tight">
-                  <span className="font-semibold text-slate-800 block text-xs truncate">
-                    {user.name}
-                  </span>
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span className="font-semibold text-slate-800 text-xs truncate">
+                      {user.name}
+                    </span>
+                    <span
+                      className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full border ${
+                        user.role === 'super_admin'
+                          ? 'bg-purple-100 text-purple-700 border-purple-200'
+                          : user.role === 'admin'
+                          ? 'bg-indigo-100 text-indigo-700 border-indigo-200'
+                          : 'bg-slate-200/80 text-slate-600 border-slate-300'
+                      }`}
+                    >
+                      {user.role === 'super_admin' ? 'Super Admin' : user.role === 'admin' ? 'Admin' : 'Employee'}
+                    </span>
+                  </div>
                   <span className="text-[10px] text-slate-400 block truncate">{user.email}</span>
                 </div>
               )}

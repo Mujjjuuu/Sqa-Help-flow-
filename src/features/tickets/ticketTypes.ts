@@ -26,6 +26,15 @@ export interface TicketFormData {
   category_id: string;
   status_id: string;
   priority: TicketPriority;
+  severity?: import('../../types').TicketSeverity;
+  dev_mask?: import('../../types').TicketDevMask;
+  color?: import('../../types').TicketColor;
+  ref_code?: string;
+  ticket_type?: string;
+  work_assignments?: import('../../types').TicketWorkAssignments;
+  work_relay?: import('../../types').TicketWorkRelay;
+  time_tracking?: import('../../types').TicketTimeTracking;
+  start_date?: string | null;
   due_date?: string | null;
   files?: File[];
 }

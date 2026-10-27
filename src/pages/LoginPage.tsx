@@ -148,7 +148,7 @@ export const LoginPage: React.FC = () => {
                 <div>
                   <h4 className="text-xs font-semibold text-slate-200">Simplified 4-Stage Workflow</h4>
                   <p className="text-[11px] text-slate-400 mt-0.5">
-                    Just Written · Under Review · Verified · Uploaded
+                    Just Written · Under Review · Verified · Verified by QA
                   </p>
                 </div>
               </div>

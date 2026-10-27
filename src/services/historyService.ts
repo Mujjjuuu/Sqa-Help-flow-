@@ -23,14 +23,25 @@ export const historyService = {
     ticketId: string,
     actionType: TicketHistoryActionType,
     oldValue?: string | null,
-    newValue?: string | null
+    newValue?: string | null,
+    user?: { name?: string; avatar?: string; id?: string },
+    details?: string
   ): Promise<TicketHistory> {
+    const currentUser = localDB.getCurrentUser();
+    const authorName = user?.name || currentUser?.name || 'Team Member';
+    const authorAvatar = user?.avatar || currentUser?.avatar_url || '';
+    const authorId = user?.id || currentUser?.id || 'usr-default';
+
     const historyItem: TicketHistory = {
       id: `hist-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       ticket_id: ticketId,
+      user_id: authorId,
+      user_name: authorName,
+      user_avatar: authorAvatar,
       action_type: actionType,
       old_value: oldValue ?? null,
       new_value: newValue ?? null,
+      details: details ?? undefined,
       created_at: new Date().toISOString(),
     };
 
@@ -49,7 +60,7 @@ export const historyService = {
           .single();
 
         if (!error && data) {
-          return data as TicketHistory;
+          return { ...data, user_name: authorName, user_avatar: authorAvatar } as TicketHistory;
         }
       } catch (err) {
         console.warn('History insert error in Supabase:', err);

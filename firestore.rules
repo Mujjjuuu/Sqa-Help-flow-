@@ -28,20 +28,19 @@ service cloud.firestore {
       return resource.data;
     }
 
-    // Users
+    // Users (Profiles & Roles: super_admin, admin, employee)
     match /users/{userId} {
-      allow read: if isSignedIn() && (request.auth.uid == userId);
-      allow create: if isOwner(userId)
-        && incoming().keys().hasAll(['id', 'email', 'name', 'created_at'])
-        && incoming().keys().hasOnly(['id', 'email', 'name', 'avatar_url', 'created_at'])
-        && incoming().id == userId
-        && incoming().name is string && incoming().name.size() > 0 && incoming().name.size() <= 100
-        && incoming().email is string && incoming().email.size() <= 150;
-      allow update: if isOwner(userId)
-        && incoming().id == existing().id
-        && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'avatar_url'])
-        && (incoming().name is string && incoming().name.size() > 0 && incoming().name.size() <= 100);
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
       allow delete: if false;
+    }
+
+    // Attendance Records
+    match /attendance/{recordId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     // Projects (Parent Resource)

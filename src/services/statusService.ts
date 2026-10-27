@@ -2,38 +2,67 @@ import { Status } from '../types';
 import { DEFAULT_TICKET_STATUSES } from '../config/ticketStatuses';
 import { getSupabaseClient, isSupabaseConfigured } from './supabaseClient';
 import { localDB } from './localStore';
+import { firestoreService } from './firestoreService';
 
 export const statusService = {
   async getStatuses(projectId: string): Promise<Status[]> {
-    const supabase = getSupabaseClient();
-    if (isSupabaseConfigured() && supabase) {
-      const { data, error } = await supabase
-        .from('statuses')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('position', { ascending: true });
+    let rawList: Status[] = [];
 
-      if (!error && data && data.length > 0) {
-        return data as Status[];
+    // Try Firestore first
+    try {
+      const fsList = await firestoreService.getStatuses(projectId);
+      if (fsList && fsList.length > 0) {
+        rawList = fsList;
       }
+    } catch {
+      // Fallback
+    }
 
-      // If no statuses exist yet in Supabase for this project, seed them
-      if (!error && data && data.length === 0) {
-        const toInsert = DEFAULT_TICKET_STATUSES.map((s) => ({
-          project_id: projectId,
-          name: s.name,
-          position: s.position,
-          is_final: s.is_final,
-        }));
-        const { data: inserted } = await supabase
+    if (rawList.length === 0) {
+      const supabase = getSupabaseClient();
+      if (isSupabaseConfigured() && supabase) {
+        const { data, error } = await supabase
           .from('statuses')
-          .insert(toInsert)
-          .select();
-        if (inserted) return inserted as Status[];
+          .select('*')
+          .eq('project_id', projectId)
+          .order('position', { ascending: true });
+
+        if (!error && data && data.length > 0) {
+          rawList = data as Status[];
+        } else if (!error && data && data.length === 0) {
+          const toInsert = DEFAULT_TICKET_STATUSES.map((s) => ({
+            project_id: projectId,
+            name: s.name,
+            position: s.position,
+            is_final: s.is_final,
+          }));
+          const { data: inserted } = await supabase
+            .from('statuses')
+            .insert(toInsert)
+            .select();
+          if (inserted) rawList = inserted as Status[];
+        }
       }
     }
 
-    return localDB.getStatuses(projectId);
+    if (rawList.length === 0) {
+      rawList = localDB.getStatuses(projectId);
+    }
+
+    // Strict deduplication by ID and position
+    const seenIds = new Set<string>();
+    const seenPositions = new Set<number>();
+    const deduped: Status[] = [];
+
+    for (const s of rawList) {
+      if (s && s.id && !seenIds.has(s.id) && !seenPositions.has(s.position)) {
+        seenIds.add(s.id);
+        seenPositions.add(s.position);
+        deduped.push(s);
+      }
+    }
+
+    return deduped.sort((a, b) => a.position - b.position);
   },
 
   async createStatus(

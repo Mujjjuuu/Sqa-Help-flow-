@@ -86,7 +86,8 @@ export const ReportsPage: React.FC = () => {
           {projects.map((project) => {
             const report = reportsMap[project.id];
             const totalTickets = report?.totalTickets || 0;
-            const uploadedTickets = report?.statusCounts['Uploaded'] || 0;
+            const uploadedTickets =
+              (report?.statusCounts['Verified by QA'] ?? report?.statusCounts['Uploaded']) || 0;
             const progress = report?.completionPercentage || 0;
 
             return (
@@ -128,7 +129,7 @@ export const ReportsPage: React.FC = () => {
                         <strong className="text-slate-800">{totalTickets}</strong> Total Tickets
                       </span>
                       <span>
-                        <strong className="text-purple-700">{uploadedTickets}</strong> Uploaded
+                        <strong className="text-purple-700">{uploadedTickets}</strong> Verified by QA
                       </span>
                     </div>
                   </div>

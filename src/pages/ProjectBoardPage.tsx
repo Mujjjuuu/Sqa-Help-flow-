@@ -14,6 +14,9 @@ import {
   Download,
   AlertCircle,
   ChevronDown,
+  Sparkles,
+  Image as ImageIcon,
+  StickyNote,
 } from 'lucide-react';
 import { Button } from '../components/Button';
 import { BoardSkeleton } from '../components/Skeleton';
@@ -21,10 +24,12 @@ import { EmptyState } from '../components/EmptyState';
 import { TicketBoard } from '../features/tickets/TicketBoard';
 import { TicketForm } from '../features/tickets/TicketForm';
 import { TicketDetails } from '../features/tickets/TicketDetails';
+import { GenerateTicketFromImageModal } from '../features/tickets/GenerateTicketFromImageModal';
 import { ProjectOverview } from '../features/projects/ProjectOverview';
 import { ReportPreview } from '../features/reports/ReportPreview';
 import { projectService } from '../features/projects/projectService';
 import { ticketService } from '../features/tickets/ticketService';
+import { TicketFormData } from '../features/tickets/ticketTypes';
 import { statusService } from '../services/statusService';
 import { categoryService } from '../services/categoryService';
 import { reportService } from '../features/reports/reportService';
@@ -59,6 +64,9 @@ export const ProjectBoardPage: React.FC = () => {
 
   // Modals
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
+  const [isImageToTicketModalOpen, setIsImageToTicketModalOpen] = useState(false);
+  const [ticketDraftFromImage, setTicketDraftFromImage] = useState<TicketFormData | null>(null);
+  const [ticketDraftFiles, setTicketDraftFiles] = useState<File[]>([]);
   const [selectedTicketForDetails, setSelectedTicketForDetails] = useState<Ticket | null>(null);
   const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
   const [targetColumnForNewTicket, setTargetColumnForNewTicket] = useState<string | undefined>();
@@ -88,8 +96,26 @@ export const ProjectBoardPage: React.FC = () => {
           projectService.getProjectStats(proj.id),
         ]);
 
-        setStatuses(stList);
-        setCategories(catList);
+        // Deduplicate statuses by id & position
+        const seenStIds = new Set<string>();
+        const seenStPos = new Set<number>();
+        const uniqueStatuses = (stList || []).filter((s) => {
+          if (!s || !s.id || seenStIds.has(s.id) || seenStPos.has(s.position)) return false;
+          seenStIds.add(s.id);
+          seenStPos.add(s.position);
+          return true;
+        });
+
+        // Deduplicate categories by id
+        const seenCatIds = new Set<string>();
+        const uniqueCats = (catList || []).filter((c) => {
+          if (!c || !c.id || seenCatIds.has(c.id)) return false;
+          seenCatIds.add(c.id);
+          return true;
+        });
+
+        setStatuses(uniqueStatuses);
+        setCategories(uniqueCats);
         setTickets(tktList);
         setStats(projStats);
       }
@@ -127,12 +153,54 @@ export const ProjectBoardPage: React.FC = () => {
     setSelectedPriority('');
   };
 
-  // Drag-and-drop ticket movement
+  // Drag-and-drop & direct ticket status movement
   const handleMoveTicket = async (ticketId: string, newStatusId: string) => {
-    // Optimistic update
-    setTickets((prev) =>
-      prev.map((t) => (t.id === ticketId ? { ...t, status_id: newStatusId } : t))
-    );
+    const targetStatus = statuses.find((s) => s.id === newStatusId);
+    const now = new Date().toISOString();
+
+    // Immediate optimistic update with duplicate protection
+    setTickets((prev) => {
+      const targetTicket = prev.find((t) => t.id === ticketId);
+      const targetKey = targetTicket?.project_id && targetTicket?.ticket_number
+        ? `${targetTicket.project_id}::${targetTicket.ticket_number.trim().toLowerCase()}`
+        : '';
+
+      const seenIds = new Set<string>();
+      const seenKeys = new Set<string>();
+
+      return prev
+        .map((t) => {
+          const isTarget =
+            t.id === ticketId ||
+            (targetKey &&
+              t.project_id &&
+              t.ticket_number &&
+              `${t.project_id}::${t.ticket_number.trim().toLowerCase()}` === targetKey);
+
+          return isTarget
+            ? {
+                ...t,
+                status_id: newStatusId,
+                status: targetStatus || t.status,
+                updated_at: now,
+              }
+            : t;
+        })
+        .filter((t) => {
+          if (seenIds.has(t.id)) return false;
+          seenIds.add(t.id);
+          const key = t.project_id && t.ticket_number ? `${t.project_id}::${t.ticket_number.trim().toLowerCase()}` : t.id;
+          if (seenKeys.has(key)) return false;
+          seenKeys.add(key);
+          return true;
+        });
+    });
+
+    if (selectedTicketForDetails?.id === ticketId) {
+      setSelectedTicketForDetails((prev) =>
+        prev ? { ...prev, status_id: newStatusId, status: targetStatus || prev.status, updated_at: now } : null
+      );
+    }
 
     try {
       await ticketService.moveTicketStatus(ticketId, newStatusId);
@@ -142,11 +210,6 @@ export const ProjectBoardPage: React.FC = () => {
       }
     } catch (err) {
       console.error('Failed to move ticket:', err);
-      // Revert if error
-      if (currentProject) {
-        const refreshed = await ticketService.getTickets(currentProject.id);
-        setTickets(refreshed);
-      }
     }
   };
 
@@ -253,7 +316,7 @@ export const ProjectBoardPage: React.FC = () => {
                 <strong className="text-slate-900 font-semibold">{stats.totalTickets}</strong> Tickets
               </span>
               <span className="text-purple-600 font-medium">
-                • {stats.uploadedTickets} Uploaded ({stats.completionPercentage}%)
+                • {stats.uploadedTickets} Verified by QA ({stats.completionPercentage}%)
               </span>
             </div>
           )}
@@ -365,9 +428,28 @@ export const ProjectBoardPage: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={handleOpenReport}
-            className="text-xs"
           >
             Report View
+          </Button>
+
+          {/* Scratchpad Notes */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/notes')}
+            leftIcon={<StickyNote className="w-3.5 h-3.5 text-amber-600" />}
+          >
+            Notes
+          </Button>
+
+          {/* AI Image to Ticket Generator */}
+          <Button
+            variant="ai"
+            size="sm"
+            onClick={() => setIsImageToTicketModalOpen(true)}
+            leftIcon={<Sparkles className="w-3.5 h-3.5 text-indigo-600" />}
+          >
+            Image to Ticket
           </Button>
 
           {/* Create Ticket Button (Shown specifically inside project board) */}
@@ -375,8 +457,7 @@ export const ProjectBoardPage: React.FC = () => {
             variant="primary"
             size="sm"
             onClick={() => handleOpenAddTicket()}
-            leftIcon={<Plus className="w-4 h-4" />}
-            className="text-xs font-semibold shadow-xs"
+            leftIcon={<Plus className="w-3.5 h-3.5" />}
           >
             Create Ticket
           </Button>
@@ -424,7 +505,8 @@ export const ProjectBoardPage: React.FC = () => {
               <option value="low">Low</option>
               <option value="medium">Medium</option>
               <option value="high">High</option>
-              <option value="urgent">Urgent</option>
+              <option value="critical">Critical</option>
+              <option value="urgent">Critical (Urgent)</option>
             </select>
 
             {hasActiveFilters && (
@@ -469,6 +551,8 @@ export const ProjectBoardPage: React.FC = () => {
         onClose={() => {
           setIsTicketModalOpen(false);
           setEditingTicket(null);
+          setTicketDraftFromImage(null);
+          setTicketDraftFiles([]);
           setTargetColumnForNewTicket(undefined);
         }}
         onSubmit={handleSaveTicket}
@@ -476,9 +560,29 @@ export const ProjectBoardPage: React.FC = () => {
         statuses={statuses}
         categories={categories}
         initialData={editingTicket}
+        initialDraft={ticketDraftFromImage}
+        initialFiles={ticketDraftFiles}
         defaultProjectId={currentProject?.id}
         defaultStatusId={targetColumnForNewTicket}
         onCategoryAdded={(newCat) => setCategories((prev) => [...prev, newCat])}
+      />
+
+      {/* Generate Ticket from Image Modal */}
+      <GenerateTicketFromImageModal
+        isOpen={isImageToTicketModalOpen}
+        onClose={() => setIsImageToTicketModalOpen(false)}
+        projects={allProjects}
+        statuses={statuses}
+        categories={categories}
+        currentProjectId={currentProject?.id}
+        defaultStatusId={statuses[0]?.id}
+        onTicketCreated={() => loadData(currentProject?.id)}
+        onOpenFullFormWithDraft={(draft, imageFile) => {
+          setTicketDraftFromImage(draft);
+          if (imageFile) setTicketDraftFiles([imageFile]);
+          setEditingTicket(null);
+          setIsTicketModalOpen(true);
+        }}
       />
 
       {/* Ticket Full Details Drawer / Modal */}

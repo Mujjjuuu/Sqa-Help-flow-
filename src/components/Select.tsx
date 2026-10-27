@@ -33,11 +33,13 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           } ${className}`}
           {...props}
         >
-          {options.map((opt) => (
-            <option key={opt.value} value={opt.value} disabled={opt.disabled}>
-              {opt.label}
-            </option>
-          ))}
+          {options
+            .filter((opt, idx, arr) => arr.findIndex((o) => o.value === opt.value) === idx)
+            .map((opt) => (
+              <option key={opt.value} value={opt.value} disabled={opt.disabled}>
+                {opt.label}
+              </option>
+            ))}
         </select>
         {error ? (
           <p className="mt-1 text-xs text-rose-600">{error}</p>

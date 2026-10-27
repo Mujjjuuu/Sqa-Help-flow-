@@ -62,7 +62,7 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
 
         <Card className="p-4 bg-white">
           <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-xs font-medium">Uploaded</span>
+            <span className="text-xs font-medium">Verified by QA</span>
             <Upload className="w-4 h-4 text-purple-500" />
           </div>
           <p className="text-2xl font-bold text-purple-700">{stats.uploadedTickets}</p>
@@ -152,7 +152,10 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
               <p className="text-xs text-slate-400 py-6 text-center">No tickets in this project yet.</p>
             ) : (
               <div className="divide-y divide-slate-100">
-                {recentTickets.slice(0, 5).map((t) => (
+                {recentTickets
+                  .filter((t, idx, arr) => arr.findIndex((x) => x.id === t.id) === idx)
+                  .slice(0, 5)
+                  .map((t) => (
                   <div
                     key={t.id}
                     onClick={() => onSelectTicket(t)}

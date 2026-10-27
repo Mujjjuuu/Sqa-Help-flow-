@@ -118,9 +118,9 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({
               <span className="text-lg font-bold text-slate-900">{totalTickets}</span>
             </div>
             <div>
-              <span className="text-slate-400 block text-[11px]">Completed & Uploaded</span>
+              <span className="text-slate-400 block text-[11px]">Verified by QA</span>
               <span className="text-lg font-bold text-purple-700">
-                {statusCounts['Uploaded'] || 0}
+                {statusCounts['Verified by QA'] ?? statusCounts['Uploaded'] ?? 0}
               </span>
             </div>
             <div>

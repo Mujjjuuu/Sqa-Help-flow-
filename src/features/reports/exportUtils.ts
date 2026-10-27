@@ -56,7 +56,7 @@ export const exportUtils = {
         'Last Updated',
         new Date(ticket.updated_at).toLocaleDateString(),
         'Status Stage',
-        ticket.status?.is_final ? 'Final (Uploaded)' : 'Active Workflow',
+        ticket.status?.is_final ? 'Final (Verified by QA)' : 'Active Workflow',
       ],
     ];
 
@@ -534,7 +534,7 @@ export const exportUtils = {
     doc.setFontSize(8);
     doc.setTextColor(100, 116, 139);
     doc.text(
-      `Uploaded: ${report.statusCounts['Uploaded'] || 0} / ${report.totalTickets} total`,
+      `Verified by QA: ${report.statusCounts['Verified by QA'] ?? report.statusCounts['Uploaded'] ?? 0} / ${report.totalTickets} total`,
       rightBoxX + 6,
       startY + 34
     );

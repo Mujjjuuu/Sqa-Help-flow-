@@ -12,7 +12,7 @@ import {
   collectionGroup,
 } from 'firebase/firestore';
 import { db, auth } from './firebase';
-import { Project, Ticket, TicketStatus, TicketCategory, Attachment, TicketHistory } from '../types';
+import { Project, Ticket, Status, Category, Attachment, TicketHistory } from '../types';
 import { localDB } from './localStore';
 
 export const firestoreService = {
@@ -81,17 +81,23 @@ export const firestoreService = {
   // ----------------------------------------------------
   // Statuses (Subcollection under /projects/{projectId}/statuses)
   // ----------------------------------------------------
-  async getStatuses(projectId: string): Promise<TicketStatus[]> {
+  async getStatuses(projectId: string): Promise<Status[]> {
     try {
       const colRef = collection(db, 'projects', projectId, 'statuses');
       const q = query(colRef, orderBy('position', 'asc'));
       const snapshot = await getDocs(q);
       if (!snapshot.empty) {
-        const statuses: TicketStatus[] = [];
+        const statusesMap = new Map<string, Status>();
         snapshot.forEach((docSnap) => {
-          statuses.push(docSnap.data() as TicketStatus);
+          const data = docSnap.data() as Status;
+          if (data && data.id) {
+            statusesMap.set(data.id, data);
+          }
         });
-        return statuses;
+        if (statusesMap.size > 0) {
+          const list = Array.from(statusesMap.values());
+          return list.sort((a, b) => a.position - b.position);
+        }
       }
     } catch (err) {
       console.warn(`Firestore getStatuses for project ${projectId} warning:`, err);
@@ -99,7 +105,7 @@ export const firestoreService = {
     return localDB.getStatuses(projectId);
   },
 
-  async saveStatuses(projectId: string, statuses: TicketStatus[]): Promise<TicketStatus[]> {
+  async saveStatuses(projectId: string, statuses: Status[]): Promise<Status[]> {
     try {
       for (const st of statuses) {
         const docRef = doc(db, 'projects', projectId, 'statuses', st.id);
@@ -115,20 +121,23 @@ export const firestoreService = {
     } catch (err) {
       console.warn('Firestore saveStatuses warning:', err);
     }
-    return localDB.saveStatuses(projectId, statuses);
+    for (const st of statuses) {
+      localDB.saveStatus(st);
+    }
+    return statuses;
   },
 
   // ----------------------------------------------------
   // Categories (Subcollection under /projects/{projectId}/categories)
   // ----------------------------------------------------
-  async getCategories(projectId: string): Promise<TicketCategory[]> {
+  async getCategories(projectId: string): Promise<Category[]> {
     try {
       const colRef = collection(db, 'projects', projectId, 'categories');
       const snapshot = await getDocs(colRef);
       if (!snapshot.empty) {
-        const cats: TicketCategory[] = [];
+        const cats: Category[] = [];
         snapshot.forEach((docSnap) => {
-          cats.push(docSnap.data() as TicketCategory);
+          cats.push(docSnap.data() as Category);
         });
         return cats;
       }
@@ -138,7 +147,7 @@ export const firestoreService = {
     return localDB.getCategories(projectId);
   },
 
-  async saveCategory(projectId: string, category: TicketCategory): Promise<TicketCategory> {
+  async saveCategory(projectId: string, category: Category): Promise<Category> {
     try {
       const docRef = doc(db, 'projects', projectId, 'categories', category.id);
       await setDoc(docRef, {
@@ -157,32 +166,147 @@ export const firestoreService = {
   // Tickets (Subcollection under /projects/{projectId}/tickets)
   // ----------------------------------------------------
   async getTickets(projectId?: string): Promise<Ticket[]> {
+    const localTickets = localDB.getTickets(projectId);
+    const statuses = localDB.getStatuses(projectId || '');
+    const ticketMap = new Map<string, Ticket>();
+
+    // Start with local tickets
+    for (const t of localTickets) {
+      if (t.id) ticketMap.set(t.id, t);
+    }
+
     try {
       if (projectId) {
         const colRef = collection(db, 'projects', projectId, 'tickets');
         const snap = await getDocs(colRef);
-        if (!snap.empty) {
-          const tickets: Ticket[] = [];
-          snap.forEach((docSnap) => {
-            tickets.push(docSnap.data() as Ticket);
-          });
-          return tickets;
-        }
+        snap.forEach((docSnap) => {
+          const fsData = docSnap.data() as Ticket;
+          if (fsData.id) {
+            const fsKey = fsData.project_id && fsData.ticket_number ? `${fsData.project_id}::${fsData.ticket_number.trim().toLowerCase()}` : '';
+            let existingKey: string | undefined;
+            let existing: Ticket | undefined = ticketMap.get(fsData.id);
+
+            if (!existing && fsKey) {
+              for (const [k, t] of ticketMap.entries()) {
+                const tKey = t.project_id && t.ticket_number ? `${t.project_id}::${t.ticket_number.trim().toLowerCase()}` : '';
+                if (tKey === fsKey) {
+                  existing = t;
+                  existingKey = k;
+                  break;
+                }
+              }
+            }
+
+            if (existing) {
+              const localTime = new Date(existing.updated_at || existing.created_at || 0).getTime();
+              const fsTime = new Date(fsData.updated_at || fsData.created_at || 0).getTime();
+              if (localTime >= fsTime) {
+                if (existingKey && existingKey !== fsData.id) {
+                  ticketMap.delete(existingKey);
+                }
+                ticketMap.set(fsData.id, {
+                  ...fsData,
+                  ...existing,
+                });
+                return;
+              }
+            }
+
+            if (existingKey && existingKey !== fsData.id) {
+              ticketMap.delete(existingKey);
+            }
+
+            const statusObj = statuses.find((s) => s.id === fsData.status_id) || existing?.status;
+            ticketMap.set(fsData.id, {
+              ...existing,
+              ...fsData,
+              status: statusObj,
+              category: existing?.category,
+              attachments: existing?.attachments || [],
+              history: existing?.history || [],
+            });
+          }
+        });
       } else {
         // Collect tickets across all projects
         const projs = await this.getProjects();
-        const all: Ticket[] = [];
         for (const p of projs) {
           const colRef = collection(db, 'projects', p.id, 'tickets');
           const snap = await getDocs(colRef);
-          snap.forEach((docSnap) => all.push(docSnap.data() as Ticket));
+          snap.forEach((docSnap) => {
+            const fsData = docSnap.data() as Ticket;
+            if (fsData.id) {
+              const fsKey = fsData.project_id && fsData.ticket_number ? `${fsData.project_id}::${fsData.ticket_number.trim().toLowerCase()}` : '';
+              let existingKey: string | undefined;
+              let existing: Ticket | undefined = ticketMap.get(fsData.id);
+
+              if (!existing && fsKey) {
+                for (const [k, t] of ticketMap.entries()) {
+                  const tKey = t.project_id && t.ticket_number ? `${t.project_id}::${t.ticket_number.trim().toLowerCase()}` : '';
+                  if (tKey === fsKey) {
+                    existing = t;
+                    existingKey = k;
+                    break;
+                  }
+                }
+              }
+
+              if (existing) {
+                const localTime = new Date(existing.updated_at || existing.created_at || 0).getTime();
+                const fsTime = new Date(fsData.updated_at || fsData.created_at || 0).getTime();
+                if (localTime >= fsTime) {
+                  if (existingKey && existingKey !== fsData.id) {
+                    ticketMap.delete(existingKey);
+                  }
+                  ticketMap.set(fsData.id, {
+                    ...fsData,
+                    ...existing,
+                  });
+                  return;
+                }
+              }
+
+              if (existingKey && existingKey !== fsData.id) {
+                ticketMap.delete(existingKey);
+              }
+
+              const pStatuses = localDB.getStatuses(p.id);
+              const statusObj = pStatuses.find((s) => s.id === fsData.status_id) || existing?.status;
+              ticketMap.set(fsData.id, {
+                ...existing,
+                ...fsData,
+                status: statusObj,
+                category: existing?.category,
+                attachments: existing?.attachments || [],
+                history: existing?.history || [],
+              });
+            }
+          });
         }
-        if (all.length > 0) return all;
       }
     } catch (err) {
-      console.warn('Firestore getTickets warning, falling back to local DB:', err);
+      console.warn('Firestore getTickets note, using local cache:', err);
     }
-    return localDB.getTickets(projectId);
+
+    // Secondary pass: deduplicate by project_id + ticket_number (keep newest)
+    const seenTicketKeys = new Set<string>();
+    const deduplicatedList: Ticket[] = [];
+
+    const sorted = Array.from(ticketMap.values()).sort((a, b) => {
+      const timeA = new Date(a.updated_at || a.created_at || 0).getTime();
+      const timeB = new Date(b.updated_at || b.created_at || 0).getTime();
+      return timeB - timeA;
+    });
+
+    for (const t of sorted) {
+      const key = t.project_id && t.ticket_number ? `${t.project_id}::${t.ticket_number.trim().toLowerCase()}` : t.id;
+      if (!seenTicketKeys.has(key)) {
+        seenTicketKeys.add(key);
+        deduplicatedList.push(t);
+      }
+    }
+
+    return deduplicatedList;
   },
 
   async getTicketById(ticketId: string): Promise<Ticket | null> {
@@ -204,7 +328,7 @@ export const firestoreService = {
         status_id: ticket.status_id,
         priority: ticket.priority,
         created_at: ticket.created_at || new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        updated_at: ticket.updated_at || new Date().toISOString(),
       };
       if (ticket.description) dataToSave.description = ticket.description;
       if (ticket.notes) dataToSave.notes = ticket.notes;

@@ -4,6 +4,7 @@ import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
 import { TicketForm } from '../features/tickets/TicketForm';
 import { ProjectForm } from '../features/projects/ProjectForm';
+import { GeminiChatBot } from './GeminiChatBot';
 import { projectService } from '../features/projects/projectService';
 import { ticketService } from '../features/tickets/ticketService';
 import { statusService } from '../services/statusService';
@@ -35,8 +36,22 @@ export const Layout: React.FC = () => {
           statusService.getStatuses(projs[0].id),
           categoryService.getCategories(projs[0].id),
         ]);
-        setStatuses(stList);
-        setCategories(catList);
+        const seenStIds = new Set<string>();
+        const uniqueSt = (stList || []).filter((s) => {
+          if (!s || !s.id || seenStIds.has(s.id)) return false;
+          seenStIds.add(s.id);
+          return true;
+        });
+
+        const seenCatIds = new Set<string>();
+        const uniqueCats = (catList || []).filter((c) => {
+          if (!c || !c.id || seenCatIds.has(c.id)) return false;
+          seenCatIds.add(c.id);
+          return true;
+        });
+
+        setStatuses(uniqueSt);
+        setCategories(uniqueCats);
       }
     } catch (e) {
       console.error('Failed to load global context:', e);
@@ -129,6 +144,9 @@ export const Layout: React.FC = () => {
         onClose={() => setIsGlobalProjectModalOpen(false)}
         onSubmit={handleCreateGlobalProject}
       />
+
+      {/* Floating Gemini Chatbot (Bottom Left) */}
+      <GeminiChatBot />
     </div>
   );
 };
