@@ -1,17 +1,22 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export type Theme = 'light' | 'dark' | 'system';
+export type CursorMode = 'round' | 'arrow' | 'system';
 
 interface ThemeContextType {
   theme: Theme;
   effectiveTheme: 'light' | 'dark';
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
+  cursorMode: CursorMode;
+  setCursorMode: (mode: CursorMode) => void;
+  cycleCursorMode: () => void;
   customCursor: boolean;
   setCustomCursor: (enabled: boolean) => void;
 }
 
 const THEME_STORAGE_KEY = 'krum_theme_preference';
+const CURSOR_MODE_STORAGE_KEY = 'krum_cursor_mode_preference';
 const CURSOR_STORAGE_KEY = 'krum_custom_cursor_preference';
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -29,16 +34,19 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return 'dark'; // KRUM default: modern sleek dark theme
   });
 
-  const [customCursor, setCustomCursorState] = useState<boolean>(() => {
+  const [cursorMode, setCursorModeState] = useState<CursorMode>(() => {
     try {
-      const saved = localStorage.getItem(CURSOR_STORAGE_KEY);
-      if (saved !== null) {
-        return saved === 'true';
+      const savedMode = localStorage.getItem(CURSOR_MODE_STORAGE_KEY) as CursorMode;
+      if (savedMode && ['round', 'arrow', 'system'].includes(savedMode)) {
+        return savedMode;
       }
+      // Migrate legacy boolean if present
+      const savedLegacy = localStorage.getItem(CURSOR_STORAGE_KEY);
+      if (savedLegacy === 'false') return 'system';
     } catch (e) {
       // Ignore
     }
-    return true; // Custom arrow enabled by default
+    return 'round'; // Default to round cursor as requested!
   });
 
   const [systemIsDark, setSystemIsDark] = useState<boolean>(() => {
@@ -76,15 +84,17 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [effectiveTheme]);
 
-  // Apply custom cursor class to root
+  // Apply custom cursor classes to root element
   useEffect(() => {
     const root = document.documentElement;
-    if (customCursor) {
-      root.classList.add('krum-custom-cursor-active');
-    } else {
-      root.classList.remove('krum-custom-cursor-active');
+    root.classList.remove('krum-custom-cursor-active', 'krum-cursor-round', 'krum-cursor-arrow');
+
+    if (cursorMode === 'round') {
+      root.classList.add('krum-custom-cursor-active', 'krum-cursor-round');
+    } else if (cursorMode === 'arrow') {
+      root.classList.add('krum-custom-cursor-active', 'krum-cursor-arrow');
     }
-  }, [customCursor]);
+  }, [cursorMode]);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
@@ -100,12 +110,30 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setTheme(nextTheme);
   };
 
-  const setCustomCursor = (enabled: boolean) => {
-    setCustomCursorState(enabled);
+  const setCursorMode = (mode: CursorMode) => {
+    setCursorModeState(mode);
     try {
-      localStorage.setItem(CURSOR_STORAGE_KEY, String(enabled));
+      localStorage.setItem(CURSOR_MODE_STORAGE_KEY, mode);
+      localStorage.setItem(CURSOR_STORAGE_KEY, String(mode !== 'system'));
     } catch (e) {
-      console.warn('Could not save custom cursor preference:', e);
+      console.warn('Could not save cursor mode:', e);
+    }
+  };
+
+  const cycleCursorMode = () => {
+    const cycle: Record<CursorMode, CursorMode> = {
+      round: 'arrow',
+      arrow: 'system',
+      system: 'round',
+    };
+    setCursorMode(cycle[cursorMode]);
+  };
+
+  const setCustomCursor = (enabled: boolean) => {
+    if (enabled) {
+      setCursorMode(cursorMode === 'system' ? 'round' : cursorMode);
+    } else {
+      setCursorMode('system');
     }
   };
 
@@ -116,7 +144,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         effectiveTheme,
         setTheme,
         toggleTheme,
-        customCursor,
+        cursorMode,
+        setCursorMode,
+        cycleCursorMode,
+        customCursor: cursorMode !== 'system',
         setCustomCursor,
       }}
     >

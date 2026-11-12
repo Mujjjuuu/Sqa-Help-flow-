@@ -2,17 +2,19 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext';
 
 export const CustomCursor: React.FC = () => {
-  const { customCursor, effectiveTheme } = useTheme();
-  const [pos, setPos] = useState<{ x: number; y: number }>({ x: -100, y: -100 });
+  const { cursorMode, effectiveTheme } = useTheme();
+  const [dotPos, setDotPos] = useState<{ x: number; y: number }>({ x: -100, y: -100 });
+  const [ringPos, setRingPos] = useState<{ x: number; y: number }>({ x: -100, y: -100 });
   const [isVisible, setIsVisible] = useState(false);
   const [isPointer, setIsPointer] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
   const [isFinePointer, setIsFinePointer] = useState(false);
+
   const requestRef = useRef<number | null>(null);
   const targetPos = useRef<{ x: number; y: number }>({ x: -100, y: -100 });
 
   useEffect(() => {
-    // Only enable hardware custom cursor on non-touch devices with fine pointers
+    // Only enable custom cursor on non-touch devices with fine pointers
     if (typeof window === 'undefined' || !window.matchMedia) return;
     const media = window.matchMedia('(pointer: fine)');
     setIsFinePointer(media.matches);
@@ -26,13 +28,14 @@ export const CustomCursor: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!customCursor || !isFinePointer) return;
+    if (cursorMode === 'system' || !isFinePointer) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       targetPos.current = { x: e.clientX, y: e.clientY };
+      setDotPos({ x: e.clientX, y: e.clientY });
       if (!isVisible) setIsVisible(true);
 
-      // Detect if hovering over clickable elements
+      // Detect if hovering over clickable / interactive elements
       const target = e.target as HTMLElement | null;
       if (target) {
         const interactive = target.closest(
@@ -53,19 +56,20 @@ export const CustomCursor: React.FC = () => {
     document.addEventListener('mouseleave', handleMouseLeave);
     document.addEventListener('mouseenter', handleMouseEnter);
 
-    // Smooth animation frame loop for micro-damping
-    let currentX = -100;
-    let currentY = -100;
+    // Smooth physics loop for the trailing magnetic ring
+    let currentX = targetPos.current.x;
+    let currentY = targetPos.current.y;
 
-    const updatePosition = () => {
-      currentX += (targetPos.current.x - currentX) * 0.85;
-      currentY += (targetPos.current.y - currentY) * 0.85;
+    const updateRingPosition = () => {
+      // Smooth interpolation for trailing ring
+      currentX += (targetPos.current.x - currentX) * 0.28;
+      currentY += (targetPos.current.y - currentY) * 0.28;
 
-      setPos({ x: currentX, y: currentY });
-      requestRef.current = requestAnimationFrame(updatePosition);
+      setRingPos({ x: currentX, y: currentY });
+      requestRef.current = requestAnimationFrame(updateRingPosition);
     };
 
-    requestRef.current = requestAnimationFrame(updatePosition);
+    requestRef.current = requestAnimationFrame(updateRingPosition);
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
@@ -75,24 +79,69 @@ export const CustomCursor: React.FC = () => {
       document.removeEventListener('mouseenter', handleMouseEnter);
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
-  }, [customCursor, isFinePointer, isVisible]);
+  }, [cursorMode, isFinePointer, isVisible]);
 
-  if (!customCursor || !isFinePointer || !isVisible) {
+  if (cursorMode === 'system' || !isFinePointer || !isVisible) {
     return null;
   }
 
   const isDark = effectiveTheme === 'dark';
 
+  // --- ROUND CURSOR MODE ---
+  if (cursorMode === 'round') {
+    return (
+      <div className="pointer-events-none fixed inset-0 z-[999999] overflow-hidden">
+        {/* Trailing Fluid Magnetic Ring */}
+        <div
+          aria-hidden="true"
+          className="fixed top-0 left-0 pointer-events-none will-change-transform"
+          style={{
+            transform: `translate3d(${ringPos.x}px, ${ringPos.y}px, 0)`,
+          }}
+        >
+          <div
+            className={`-translate-x-1/2 -translate-y-1/2 rounded-full border transition-all duration-150 ease-out flex items-center justify-center ${
+              isClicking
+                ? 'w-6 h-6 border-indigo-600 bg-indigo-600/30 scale-75'
+                : isPointer
+                ? 'w-11 h-11 border-indigo-500/90 dark:border-indigo-400 bg-indigo-500/15 backdrop-blur-[1px] shadow-sm'
+                : 'w-7 h-7 border-indigo-500/50 dark:border-indigo-400/60 bg-indigo-500/5'
+            }`}
+          />
+        </div>
+
+        {/* Precision Central Target Dot */}
+        <div
+          aria-hidden="true"
+          className="fixed top-0 left-0 pointer-events-none will-change-transform"
+          style={{
+            transform: `translate3d(${dotPos.x}px, ${dotPos.y}px, 0)`,
+          }}
+        >
+          <div
+            className={`-translate-x-1/2 -translate-y-1/2 rounded-full transition-transform duration-75 ${
+              isClicking
+                ? 'w-1.5 h-1.5 bg-indigo-700 dark:bg-indigo-300 scale-125'
+                : isPointer
+                ? 'w-2 h-2 bg-indigo-600 dark:bg-indigo-300 shadow-xs ring-2 ring-indigo-400/40'
+                : 'w-1.5 h-1.5 bg-slate-900 dark:bg-white shadow-xs'
+            }`}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // --- ARROW CURSOR MODE ---
   return (
     <div
       aria-hidden="true"
-      className="fixed top-0 left-0 pointer-events-none z-[9999] will-change-transform"
+      className="fixed top-0 left-0 pointer-events-none z-[999999] will-change-transform"
       style={{
-        transform: `translate3d(${pos.x}px, ${pos.y}px, 0)`,
+        transform: `translate3d(${dotPos.x}px, ${dotPos.y}px, 0)`,
         transition: 'transform 0.04s cubic-bezier(0.1, 1, 0.1, 1)',
       }}
     >
-      {/* Precision Arrow Silhouette */}
       <div
         className={`relative transition-all duration-150 origin-top-left ${
           isClicking ? 'scale-90 rotate-[-4deg]' : isPointer ? 'scale-110' : 'scale-100'
@@ -106,7 +155,6 @@ export const CustomCursor: React.FC = () => {
           xmlns="http://www.w3.org/2000/svg"
           className="filter drop-shadow-md"
         >
-          {/* Subtle Ambient Glow on Pointer / Hover */}
           {isPointer && (
             <path
               d="M3 2L11 23L14.5 14.5L23 11L3 2Z"
@@ -115,7 +163,6 @@ export const CustomCursor: React.FC = () => {
             />
           )}
 
-          {/* Main Arrow Body */}
           <path
             d="M3 2L11 23L14.5 14.5L23 11L3 2Z"
             fill={
@@ -140,7 +187,6 @@ export const CustomCursor: React.FC = () => {
             strokeLinejoin="round"
           />
 
-          {/* Precision Accent Center Core */}
           <circle
             cx="12"
             cy="12"
@@ -157,7 +203,6 @@ export const CustomCursor: React.FC = () => {
           />
         </svg>
 
-        {/* Small subtle mode indicator when hovering clickable elements */}
         {isPointer && (
           <span
             className={`absolute top-5 left-5 text-[9px] font-mono font-bold tracking-wider px-1.5 py-0.5 rounded shadow-xs uppercase select-none transition-opacity duration-150 ${

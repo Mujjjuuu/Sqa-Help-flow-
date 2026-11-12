@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   StickyNote,
   Plus,
@@ -44,6 +44,8 @@ import { ProjectNote, NoteFilterState, Project, TicketPriority, Category } from 
 
 export const NotesPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const urlProjectId = searchParams.get('projectId') || searchParams.get('project') || '';
   const { user } = useAuth();
 
   const [notes, setNotes] = useState<ProjectNote[]>([]);
@@ -53,7 +55,7 @@ export const NotesPage: React.FC = () => {
   // Filters
   const [filters, setFilters] = useState<NoteFilterState>({
     search: '',
-    projectId: '',
+    projectId: urlProjectId,
     tag: '',
     status: 'all',
   });
@@ -143,7 +145,7 @@ export const NotesPage: React.FC = () => {
     setEditingNote(null);
     setNoteTitle('');
     setNoteContent('');
-    setNoteProjectId('');
+    setNoteProjectId(filters.projectId || urlProjectId || projects[0]?.id || '');
     setNoteTags([]);
     setTagInput('');
     setIsPinned(false);

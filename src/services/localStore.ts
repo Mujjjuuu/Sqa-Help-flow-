@@ -757,14 +757,17 @@ export const localDB = {
   getStatuses(projectId: string): Status[] {
     const rawAll = getStoredTable<Status[]>('statuses', []);
     
-    // Auto-migrate any old status named "Uploaded" to "Verified by QA"
+    // Auto-migrate old status names across all statuses
     let hasMigrated = false;
     const migratedRaw = rawAll.map((s) => {
-      if (s && (s.name === 'Uploaded' || s.is_final)) {
-        if (s.name === 'Uploaded') {
-          hasMigrated = true;
-          return { ...s, name: 'Verified by QA', is_final: true };
-        }
+      if (!s) return s;
+      if (s.name === 'Just Written') {
+        hasMigrated = true;
+        return { ...s, name: 'Just Return' };
+      }
+      if (s.name === 'Uploaded') {
+        hasMigrated = true;
+        return { ...s, name: 'Done', is_final: true };
       }
       return s;
     });
@@ -787,20 +790,8 @@ export const localDB = {
 
     const filtered = cleanedAll.filter((s) => s.project_id === projectId);
 
-    // Strict project-level deduplication by ID and position
-    const seenIds = new Set<string>();
-    const seenPositions = new Set<number>();
-    const uniqueProjectStatuses: Status[] = [];
-    for (const s of filtered) {
-      if (!seenIds.has(s.id) && !seenPositions.has(s.position)) {
-        seenIds.add(s.id);
-        seenPositions.add(s.position);
-        uniqueProjectStatuses.push(s);
-      }
-    }
-
-    // If no statuses exist yet for this project, initialize default 4 statuses
-    if (uniqueProjectStatuses.length === 0) {
+    // If no statuses exist yet for this project, initialize default 5 statuses
+    if (filtered.length === 0) {
       const newStatuses: Status[] = DEFAULT_TICKET_STATUSES.map((st) => ({
         id: `st-${projectId}-${st.position}`,
         project_id: projectId,
@@ -816,13 +807,62 @@ export const localDB = {
       return newStatuses.sort((a, b) => a.position - b.position);
     }
 
-    // If duplicates were discovered and filtered out, heal localStorage
-    if (uniqueProjectStatuses.length !== filtered.length) {
-      const others = cleanedAll.filter((s) => s.project_id !== projectId);
-      saveTable('statuses', [...others, ...uniqueProjectStatuses]);
+    // Ensure all 5 standard statuses exist for the project
+    // 1. Just Return, 2. To Do, 3. Under Review, 4. Verified by QA, 5. Done
+    const requiredStatuses = [
+      { name: 'Just Return', position: 0, is_final: false },
+      { name: 'To Do', position: 1, is_final: false },
+      { name: 'Under Review', position: 2, is_final: false },
+      { name: 'Verified by QA', position: 3, is_final: false },
+      { name: 'Done', position: 4, is_final: true },
+    ];
+
+    let projectStatuses = [...filtered];
+    let needsUpdate = false;
+
+    // Check if any required status is missing
+    for (const req of requiredStatuses) {
+      const existing = projectStatuses.find(
+        (s) => s.name.toLowerCase() === req.name.toLowerCase()
+      );
+      if (!existing) {
+        const created: Status = {
+          id: `st-${projectId}-${req.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now().toString(36)}`,
+          project_id: projectId,
+          name: req.name,
+          position: req.position,
+          is_final: req.is_final,
+          created_at: new Date().toISOString(),
+        };
+        projectStatuses.push(created);
+        needsUpdate = true;
+      } else {
+        // Ensure correct is_final and position
+        if (existing.is_final !== req.is_final || existing.position !== req.position) {
+          existing.is_final = req.is_final;
+          existing.position = req.position;
+          needsUpdate = true;
+        }
+      }
     }
 
-    return uniqueProjectStatuses.sort((a, b) => a.position - b.position);
+    // Deduplicate by name & id
+    const seenNames = new Set<string>();
+    const finalProjectStatuses: Status[] = [];
+    for (const s of projectStatuses.sort((a, b) => a.position - b.position)) {
+      const key = s.name.toLowerCase();
+      if (!seenNames.has(key)) {
+        seenNames.add(key);
+        finalProjectStatuses.push(s);
+      }
+    }
+
+    if (needsUpdate || finalProjectStatuses.length !== filtered.length) {
+      const others = cleanedAll.filter((s) => s.project_id !== projectId);
+      saveTable('statuses', [...others, ...finalProjectStatuses]);
+    }
+
+    return finalProjectStatuses.sort((a, b) => a.position - b.position);
   },
 
   saveStatus(status: Status): Status {

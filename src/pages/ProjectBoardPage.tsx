@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Plus,
   Search,
@@ -26,9 +26,11 @@ import { TicketForm } from '../features/tickets/TicketForm';
 import { TicketDetails } from '../features/tickets/TicketDetails';
 import { GenerateTicketFromImageModal } from '../features/tickets/GenerateTicketFromImageModal';
 import { ProjectOverview } from '../features/projects/ProjectOverview';
+import { ProjectNotesSection } from '../features/notes/ProjectNotesSection';
 import { ReportPreview } from '../features/reports/ReportPreview';
 import { projectService } from '../features/projects/projectService';
 import { ticketService } from '../features/tickets/ticketService';
+import { noteService } from '../services/noteService';
 import { TicketFormData } from '../features/tickets/ticketTypes';
 import { statusService } from '../services/statusService';
 import { categoryService } from '../services/categoryService';
@@ -41,11 +43,13 @@ import {
   Category,
   ProjectStats,
   ProjectReportData,
+  ProjectNote,
 } from '../types';
 
 export const ProjectBoardPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [allProjects, setAllProjects] = useState<Project[]>([]);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
@@ -55,7 +59,75 @@ export const ProjectBoardPage: React.FC = () => {
   const [stats, setStats] = useState<ProjectStats | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'board' | 'overview'>('board');
+  const [activeTab, setActiveTab] = useState<'board' | 'overview' | 'notes'>('board');
+  const [projectNotes, setProjectNotes] = useState<ProjectNote[]>([]);
+
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'notes') {
+      setActiveTab('notes');
+    } else if (tabParam === 'overview') {
+      setActiveTab('overview');
+    } else if (tabParam === 'board') {
+      setActiveTab('board');
+    }
+  }, [searchParams]);
+
+  // Sticky scroll-stop reveal toolbar states
+  const [isScrolledDown, setIsScrolledDown] = useState(false);
+  const [isToolbarRevealed, setIsToolbarRevealed] = useState(true);
+  const lastScrollY = useRef(0);
+  const scrollStopTimer = useRef<number | null>(null);
+
+  useEffect(() => {
+    const scrollContainer = document.getElementById('main-scroll-container') || window;
+
+    const handleScroll = () => {
+      const currentScrollY =
+        scrollContainer === window
+          ? window.scrollY
+          : (scrollContainer as HTMLElement).scrollTop;
+
+      const delta = currentScrollY - lastScrollY.current;
+
+      if (currentScrollY > 40) {
+        setIsScrolledDown(true);
+
+        // When actively scrolling down, tuck the toolbar out of the way
+        if (delta > 6) {
+          setIsToolbarRevealed(false);
+        } else if (delta < -4) {
+          // When scrolling up, immediately show
+          setIsToolbarRevealed(true);
+        }
+
+        // When scrolling STOPS, show the toolbar!
+        if (scrollStopTimer.current) {
+          window.clearTimeout(scrollStopTimer.current);
+        }
+        scrollStopTimer.current = window.setTimeout(() => {
+          setIsToolbarRevealed(true);
+        }, 160);
+      } else {
+        // At top of container
+        setIsScrolledDown(false);
+        setIsToolbarRevealed(true);
+        if (scrollStopTimer.current) {
+          window.clearTimeout(scrollStopTimer.current);
+        }
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      scrollContainer.removeEventListener('scroll', handleScroll);
+      if (scrollStopTimer.current) {
+        window.clearTimeout(scrollStopTimer.current);
+      }
+    };
+  }, []);
 
   // Filters
   const [search, setSearch] = useState('');
@@ -89,11 +161,12 @@ export const ProjectBoardPage: React.FC = () => {
       setCurrentProject(proj);
 
       if (proj) {
-        const [stList, catList, tktList, projStats] = await Promise.all([
+        const [stList, catList, tktList, projStats, projNotes] = await Promise.all([
           statusService.getStatuses(proj.id),
           categoryService.getCategories(proj.id),
           ticketService.getTickets(proj.id),
           projectService.getProjectStats(proj.id),
+          noteService.getNotes({ projectId: proj.id }),
         ]);
 
         // Deduplicate statuses by id & position
@@ -118,6 +191,7 @@ export const ProjectBoardPage: React.FC = () => {
         setCategories(uniqueCats);
         setTickets(tktList);
         setStats(projStats);
+        setProjectNotes(projNotes);
       }
     } catch (e) {
       console.error('Failed to load project board data:', e);
@@ -291,40 +365,53 @@ export const ProjectBoardPage: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {/* Board Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200 dark:border-slate-800">
-        <div className="flex items-center gap-3">
-          {/* Project Switcher */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium hidden sm:inline">Project:</span>
-            <select
-              value={currentProject?.id || ''}
-              onChange={(e) => navigate(`/projects/${e.target.value}`)}
-              className="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 bg-transparent border-0 focus:outline-none focus:ring-0 cursor-pointer pr-6 py-0.5"
-            >
-              {allProjects.map((p) => (
-                <option key={p.id} value={p.id} className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {stats && (
-            <div className="hidden md:flex items-center gap-2 pl-3 border-l border-slate-200 dark:border-slate-800 text-xs">
-              <span className="text-slate-500 dark:text-slate-400">
-                <strong className="text-slate-900 dark:text-slate-100 font-semibold">{stats.totalTickets}</strong> Tickets
-              </span>
-              <span className="text-purple-600 dark:text-purple-400 font-medium">
-                • {stats.uploadedTickets} Verified by QA ({stats.completionPercentage}%)
-              </span>
+      {/* Board Header Bar (Sticky floating with scroll-stop reveal) */}
+      <div
+        className={`transition-all duration-300 ease-out z-30 ${
+          isScrolledDown
+            ? `sticky -top-4 sm:-top-6 lg:-top-8 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/90 dark:border-slate-800 shadow-md ${
+                isToolbarRevealed
+                  ? 'translate-y-0 opacity-100 pointer-events-auto'
+                  : '-translate-y-full opacity-0 pointer-events-none'
+              }`
+            : 'relative pb-2 border-b border-slate-200 dark:border-slate-800 translate-y-0 opacity-100'
+        }`}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Modern Project Selector Badge (No clumsy "Project:" text) */}
+            <div className="relative flex items-center gap-2 bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/90 dark:border-slate-700/90 rounded-xl px-3 py-1.5 shadow-2xs transition-colors group cursor-pointer">
+              <FolderKanban className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+              <select
+                value={currentProject?.id || ''}
+                onChange={(e) => navigate(`/projects/${e.target.value}`)}
+                className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 bg-transparent border-0 focus:outline-none focus:ring-0 cursor-pointer pr-5 py-0 appearance-none"
+                title="Switch active project"
+              >
+                {allProjects.map((p) => (
+                  <option key={p.id} value={p.id} className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 pointer-events-none -ml-4 shrink-0" />
             </div>
-          )}
-        </div>
+
+            {stats && (
+              <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-slate-200 dark:border-slate-800 text-xs">
+                <span className="text-slate-600 dark:text-slate-300">
+                  <strong className="text-slate-900 dark:text-slate-100 font-bold">{stats.totalTickets}</strong> Tickets
+                </span>
+                <span className="text-purple-600 dark:text-purple-400 font-semibold bg-purple-50 dark:bg-purple-950/60 px-2 py-0.5 rounded-lg border border-purple-200/60 dark:border-purple-800/60">
+                  • {stats.uploadedTickets} Verified by QA ({stats.completionPercentage}%)
+                </span>
+              </div>
+            )}
+          </div>
 
         {/* View Switcher & Action Buttons */}
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Tab Switcher (Board vs Overview) */}
+          {/* Tab Switcher (Board vs Overview vs Notes) */}
           <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
             <button
               type="button"
@@ -349,6 +436,23 @@ export const ProjectBoardPage: React.FC = () => {
             >
               <BarChart2 className="w-3.5 h-3.5" />
               <span>Overview</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('notes')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-medium transition-colors cursor-pointer ${
+                activeTab === 'notes'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs font-semibold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+              }`}
+            >
+              <StickyNote className="w-3.5 h-3.5 text-amber-500" />
+              <span>Notes</span>
+              {projectNotes.length > 0 && (
+                <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300">
+                  {projectNotes.length}
+                </span>
+              )}
             </button>
           </div>
 
@@ -432,14 +536,15 @@ export const ProjectBoardPage: React.FC = () => {
             Report View
           </Button>
 
-          {/* Scratchpad Notes */}
+          {/* Project Notes */}
           <Button
-            variant="outline"
+            variant={activeTab === 'notes' ? 'primary' : 'outline'}
             size="sm"
-            onClick={() => navigate('/notes')}
-            leftIcon={<StickyNote className="w-3.5 h-3.5 text-amber-600" />}
+            onClick={() => setActiveTab(activeTab === 'notes' ? 'board' : 'notes')}
+            leftIcon={<StickyNote className="w-3.5 h-3.5 text-amber-500" />}
+            className="text-xs"
           >
-            Notes
+            Project Notes {projectNotes.length > 0 ? `(${projectNotes.length})` : ''}
           </Button>
 
           {/* AI Image to Ticket Generator */}
@@ -463,6 +568,7 @@ export const ProjectBoardPage: React.FC = () => {
           </Button>
         </div>
       </div>
+    </div>
 
       {/* Filter Toolbar (Board Mode) */}
       {activeTab === 'board' && (
@@ -534,6 +640,13 @@ export const ProjectBoardPage: React.FC = () => {
           onMoveTicket={handleMoveTicket}
           onAddTicket={handleOpenAddTicket}
           onSelectTicket={(ticket) => setSelectedTicketForDetails(ticket)}
+        />
+      ) : activeTab === 'notes' && currentProject ? (
+        <ProjectNotesSection
+          project={currentProject}
+          notes={projectNotes}
+          categories={categories}
+          onRefresh={() => loadData(currentProject.id)}
         />
       ) : currentProject && stats ? (
         <ProjectOverview

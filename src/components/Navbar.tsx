@@ -7,6 +7,7 @@ import {
   Sun,
   Moon,
   MousePointer2,
+  CircleDot,
   PanelLeft,
   PanelLeftClose,
   Sparkles,
@@ -33,7 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   title,
 }) => {
   const { user } = useAuth();
-  const { theme, effectiveTheme, toggleTheme, customCursor, setCustomCursor } = useTheme();
+  const { theme, effectiveTheme, toggleTheme, cursorMode, cycleCursorMode } = useTheme();
   const navigate = useNavigate();
   const allUsers = localDB.getUsers();
 
@@ -113,18 +114,30 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Right Controls: Theme Toggle, Custom Arrow Toggle, Attendance Link & Profile */}
       <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-        {/* Custom Arrow Pointer Toggle */}
+        {/* Custom Precision Cursor Mode Switcher (Round / Arrow / System) */}
         <button
           type="button"
-          onClick={() => setCustomCursor(!customCursor)}
-          title={`Custom Arrow Pointer: ${customCursor ? 'Enabled (KRUM Bespoke Arrow)' : 'Disabled (Default OS Cursor)'}`}
+          onClick={cycleCursorMode}
+          title={`Cursor Mode: ${
+            cursorMode === 'round'
+              ? 'Round Precision Ring (Click to switch to Arrow)'
+              : cursorMode === 'arrow'
+              ? 'Aerodynamic Arrow (Click to switch to System)'
+              : 'System Default (Click to switch to Round)'
+          }`}
           className={`p-2 rounded-xl border transition-all cursor-pointer flex items-center justify-center ${
-            customCursor
+            cursorMode !== 'system'
               ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 shadow-2xs'
               : 'bg-white dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60'
           }`}
         >
-          <MousePointer2 className="w-3.5 h-3.5" />
+          {cursorMode === 'round' ? (
+            <CircleDot className="w-3.5 h-3.5" />
+          ) : cursorMode === 'arrow' ? (
+            <MousePointer2 className="w-3.5 h-3.5" />
+          ) : (
+            <MousePointer2 className="w-3.5 h-3.5 opacity-40" />
+          )}
         </button>
 
         {/* Enhanced Theme Toggle (Dark / Light) with visual indicator */}
@@ -154,21 +167,27 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span className="hidden sm:inline">Attendance</span>
         </Link>
 
-        {/* Persona Role Switcher */}
+        {/* Persona Switcher (Clean badge format without awkward 'Role:' label) */}
         {user && (
-          <div className="hidden lg:flex items-center gap-1 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1 shadow-2xs">
-            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase mr-1">
-              Role:
-            </span>
+          <div className="hidden lg:flex items-center gap-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1 shadow-2xs">
+            <span
+              className={`w-2 h-2 rounded-full ${
+                user.role === 'super_admin'
+                  ? 'bg-purple-500 shadow-purple-500/50 shadow-xs'
+                  : user.role === 'admin'
+                  ? 'bg-indigo-500 shadow-indigo-500/50 shadow-xs'
+                  : 'bg-emerald-500 shadow-emerald-500/50 shadow-xs'
+              }`}
+            />
             <select
               value={user.id}
               onChange={(e) => handleSwitchUser(e.target.value)}
-              className="text-xs font-bold text-slate-800 dark:text-slate-200 bg-transparent border-0 focus:outline-none cursor-pointer"
-              title="Switch user role for testing attendance & permissions"
+              className="text-xs font-semibold text-slate-800 dark:text-slate-200 bg-transparent border-0 focus:outline-none cursor-pointer pr-1"
+              title="Switch user persona"
             >
               {allUsers.map((u) => (
                 <option key={u.id} value={u.id} className="dark:bg-slate-900 text-slate-900 dark:text-slate-100">
-                  {u.name} ({u.role === 'super_admin' ? 'Super Admin' : u.role === 'admin' ? 'Admin' : 'Employee'})
+                  {u.name} • {u.role === 'super_admin' ? 'Super Admin' : u.role === 'admin' ? 'Admin' : 'Employee'}
                 </option>
               ))}
             </select>

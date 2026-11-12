@@ -38,38 +38,53 @@
   }
 }
 
-/* Custom KRUM aerodynamic arrow cursor styles */
+/* Custom KRUM cursor styles */
 @media (pointer: fine) {
-  html.krum-custom-cursor-active,
-  html.krum-custom-cursor-active * {
+  /* Round Precision Cursor: Hide system cursor so the smooth round ring and dot render cleanly */
+  html.krum-cursor-round,
+  html.krum-cursor-round body,
+  html.krum-cursor-round a,
+  html.krum-cursor-round button,
+  html.krum-cursor-round input,
+  html.krum-cursor-round select,
+  html.krum-cursor-round textarea,
+  html.krum-cursor-round [role="button"],
+  html.krum-cursor-round [role="link"],
+  html.krum-cursor-round .cursor-pointer {
+    cursor: none !important;
+  }
+
+  /* Custom Arrow Cursor */
+  html.krum-cursor-arrow,
+  html.krum-cursor-arrow * {
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M3 2L10.5 21L13.8 13.8L21 10.5L3 2Z' fill='%230f172a' stroke='%23ffffff' stroke-width='1.5' stroke-linejoin='round'/%3E%3Ccircle cx='11.5' cy='11.5' r='1.5' fill='%236366f1'/%3E%3C/svg%3E") 3 2, auto !important;
   }
 
-  html.krum-custom-cursor-active a,
-  html.krum-custom-cursor-active button,
-  html.krum-custom-cursor-active input,
-  html.krum-custom-cursor-active select,
-  html.krum-custom-cursor-active textarea,
-  html.krum-custom-cursor-active [role="button"],
-  html.krum-custom-cursor-active [role="link"],
-  html.krum-custom-cursor-active .cursor-pointer {
+  html.krum-cursor-arrow a,
+  html.krum-cursor-arrow button,
+  html.krum-cursor-arrow input,
+  html.krum-cursor-arrow select,
+  html.krum-cursor-arrow textarea,
+  html.krum-cursor-arrow [role="button"],
+  html.krum-cursor-arrow [role="link"],
+  html.krum-cursor-arrow .cursor-pointer {
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M3 2L10.5 21L13.8 13.8L21 10.5L3 2Z' fill='%234f46e5' stroke='%23ffffff' stroke-width='1.5' stroke-linejoin='round'/%3E%3Ccircle cx='11.5' cy='11.5' r='1.5' fill='%2338bdf8'/%3E%3C/svg%3E") 3 2, pointer !important;
   }
 
   /* In dark mode, crisp high-contrast light stroke custom arrow */
-  html.dark.krum-custom-cursor-active,
-  html.dark.krum-custom-cursor-active * {
+  html.dark.krum-cursor-arrow,
+  html.dark.krum-cursor-arrow * {
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M3 2L10.5 21L13.8 13.8L21 10.5L3 2Z' fill='%23f8fafc' stroke='%23090d16' stroke-width='1.5' stroke-linejoin='round'/%3E%3Ccircle cx='11.5' cy='11.5' r='1.5' fill='%23818cf8'/%3E%3C/svg%3E") 3 2, auto !important;
   }
 
-  html.dark.krum-custom-cursor-active a,
-  html.dark.krum-custom-cursor-active button,
-  html.dark.krum-custom-cursor-active input,
-  html.dark.krum-custom-cursor-active select,
-  html.dark.krum-custom-cursor-active textarea,
-  html.dark.krum-custom-cursor-active [role="button"],
-  html.dark.krum-custom-cursor-active [role="link"],
-  html.dark.krum-custom-cursor-active .cursor-pointer {
+  html.dark.krum-cursor-arrow a,
+  html.dark.krum-cursor-arrow button,
+  html.dark.krum-cursor-arrow input,
+  html.dark.krum-cursor-arrow select,
+  html.dark.krum-cursor-arrow textarea,
+  html.dark.krum-cursor-arrow [role="button"],
+  html.dark.krum-cursor-arrow [role="link"],
+  html.dark.krum-cursor-arrow .cursor-pointer {
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M3 2L10.5 21L13.8 13.8L21 10.5L3 2Z' fill='%23818cf8' stroke='%23ffffff' stroke-width='1.5' stroke-linejoin='round'/%3E%3Ccircle cx='11.5' cy='11.5' r='1.5' fill='%2338bdf8'/%3E%3C/svg%3E") 3 2, pointer !important;
   }
 }

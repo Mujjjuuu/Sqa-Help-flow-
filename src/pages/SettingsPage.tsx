@@ -16,13 +16,14 @@ import {
   Sun,
   Monitor,
   MousePointer2,
+  CircleDot,
   Palette,
 } from 'lucide-react';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { localDB } from '../services/localStore';
-import { useTheme, Theme } from '../context/ThemeContext';
+import { useTheme, Theme, CursorMode } from '../context/ThemeContext';
 
 interface WorkspacePreferences {
   defaultPriority: 'low' | 'medium' | 'high' | 'urgent';
@@ -35,7 +36,7 @@ interface WorkspacePreferences {
 const PREF_STORAGE_KEY = 'krum_user_preferences';
 
 export const SettingsPage: React.FC = () => {
-  const { theme, effectiveTheme, setTheme, customCursor, setCustomCursor } = useTheme();
+  const { theme, effectiveTheme, setTheme, cursorMode, setCursorMode, customCursor, setCustomCursor } = useTheme();
   const currentUser = localDB.getCurrentUser() || {
     name: 'Bob Official',
     email: 'boboffical54@gmail.com',
@@ -226,31 +227,93 @@ export const SettingsPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Custom Arrow Pointer Setting */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80">
-            <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                <MousePointer2 className="w-4 h-4" />
-              </div>
-              <div>
-                <span className="font-bold text-slate-900 dark:text-slate-100 text-xs block">
-                  KRUM Precision Arrow Cursor
-                </span>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
-                  Replaces the generic OS cursor with a bespoke geometric aerodynamic arrowhead, illuminated hover states, and smooth click damping.
-                </p>
-              </div>
-            </div>
-
-            <label className="relative inline-flex items-center cursor-pointer shrink-0">
-              <input
-                type="checkbox"
-                checked={customCursor}
-                onChange={(e) => setCustomCursor(e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-10 h-5.5 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-indigo-600" />
+          {/* Cursor Style Options: Round Cursor, Arrow Cursor, System Default */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200 mb-2">
+              Cursor Style
             </label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button
+                type="button"
+                onClick={() => setCursorMode('round')}
+                className={`p-3.5 rounded-xl border flex flex-col items-start gap-2.5 transition-all text-left cursor-pointer ${
+                  cursorMode === 'round'
+                    ? 'border-indigo-600 bg-indigo-50/40 dark:bg-indigo-950/40 ring-1 ring-indigo-500'
+                    : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900'
+                }`}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-200 dark:border-indigo-800">
+                    <CircleDot className="w-4 h-4" />
+                  </div>
+                  {cursorMode === 'round' && (
+                    <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+                      Active
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <span className="font-bold text-xs text-slate-900 dark:text-slate-100 block">Round Cursor</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Precision central dot with a fluid magnetic expanding ring
+                  </span>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCursorMode('arrow')}
+                className={`p-3.5 rounded-xl border flex flex-col items-start gap-2.5 transition-all text-left cursor-pointer ${
+                  cursorMode === 'arrow'
+                    ? 'border-indigo-600 bg-indigo-50/40 dark:bg-indigo-950/40 ring-1 ring-indigo-500'
+                    : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900'
+                }`}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-200 dark:border-indigo-800">
+                    <MousePointer2 className="w-4 h-4" />
+                  </div>
+                  {cursorMode === 'arrow' && (
+                    <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+                      Active
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <span className="font-bold text-xs text-slate-900 dark:text-slate-100 block">Aerodynamic Arrow</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Bespoke geometric arrowhead with illuminated hover dynamics
+                  </span>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCursorMode('system')}
+                className={`p-3.5 rounded-xl border flex flex-col items-start gap-2.5 transition-all text-left cursor-pointer ${
+                  cursorMode === 'system'
+                    ? 'border-indigo-600 bg-indigo-50/40 dark:bg-indigo-950/40 ring-1 ring-indigo-500'
+                    : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900'
+                }`}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center border border-slate-200 dark:border-slate-700">
+                    <Monitor className="w-4 h-4" />
+                  </div>
+                  {cursorMode === 'system' && (
+                    <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+                      Active
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <span className="font-bold text-xs text-slate-900 dark:text-slate-100 block">System Cursor</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Standard operating system pointer without styling
+                  </span>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       </Card>
